@@ -13,6 +13,8 @@ pub(crate) struct Database {
 impl Database {
     pub fn open(path: &str) -> Result<Database, Error> {
         let conn = Connection::open(path)?;
+        // use WAL journal mode
+        conn.execute_batch("PRAGMA journal_mode=WAL")?;
         Ok(Database {
             conn,
         })

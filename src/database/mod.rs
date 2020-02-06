@@ -23,6 +23,9 @@ impl Database {
             db.set_wal_journal_mode()?;
         }
 
+        // create migrations if not already done
+        db.create_migrations();
+
         Ok(db)
     }
 }

@@ -1,5 +1,5 @@
 [package]
-name = "mfc-notifications"
+name = "figure-tracker"
 version = "0.1.0"
 authors = ["DaRealFreak <steffen.keuper@web.de>"]
 edition = "2018"

@@ -1,40 +1,20 @@
-pub mod test {
-    extern crate rusqlite;
+use rusqlite::{Connection, Error};
 
-    use rusqlite::NO_PARAMS;
+// expose migrations
+pub(crate) mod migrations;
 
-    use self::rusqlite::{Connection, Error};
+/// Database contains the persisting database connection for all database operations
+pub(crate) struct Database {
+    pub(crate) conn: Connection
+}
 
-    pub(crate) struct Database {
-        conn: Connection
-    }
-
-    impl Database {
-        pub fn open(path: &str) -> Result<Database, Error> {
-            let conn = Connection::open(path)?;
-            Ok(Database {
-                conn,
-            })
-        }
-
-        pub fn create_migrations(&self) -> Result<(), Error> {
-            self.conn.execute(
-                "create table if not exists cat_colors (
-                         id integer primary key,
-                         name text not null unique
-                     )",
-                NO_PARAMS,
-            )?;
-            self.conn.execute(
-                "create table if not exists cats (
-                         id integer primary key,
-                         name text not null,
-                         color_id integer not null references cat_colors(id)
-                     )",
-                NO_PARAMS,
-            )?;
-
-            Ok(())
-        }
+/// Database is the entry point for all database operations
+/// by creating or opening a local database file
+impl Database {
+    pub fn open(path: &str) -> Result<Database, Error> {
+        let conn = Connection::open(path)?;
+        Ok(Database {
+            conn,
+        })
     }
 }

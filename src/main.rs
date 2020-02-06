@@ -1,10 +1,12 @@
 use rusqlite::Error;
 
+use crate::database::migrations::Migration;
+
 mod database;
 
 fn main() -> Result<(), Error> {
-    let test = database::test::Database::open("cats.db")?;
-    test.create_migrations()?;
+    let con = database::Database::open("figure_tracker.db")?;
+    con.create_migrations()?;
 
     Ok(())
 }

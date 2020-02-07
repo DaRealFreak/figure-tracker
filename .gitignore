@@ -14,3 +14,5 @@ Cargo.lock
 
 # Test binary files
 *.db
+*.db-shm
+*.db-wal

@@ -24,7 +24,7 @@ impl Database {
         }
 
         // create migrations if not already done
-        db.create_migrations();
+        db.create_migrations()?;
 
         Ok(db)
     }

@@ -10,7 +10,11 @@ edition = "2018"
 version = "0.21.0"
 features = ["bundled"]
 
+[dependencies.clap]
+git = "https://github.com/clap-rs/clap"
+version = "3.0.0-beta.1"
+features = ["yaml"]
+
 [dependencies]
 html5ever = "0.25.1"
 hyper = "0.13.2"
-clap = "2.33.0"

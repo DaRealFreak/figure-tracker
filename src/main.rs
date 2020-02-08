@@ -1,42 +1,50 @@
-// (Full example with detailed comments in examples/01d_quick_example.rs)
-//
-// This example demonstrates clap's full 'custom derive' style of creating arguments which is the
-// simplest method of use, but sacrifices some flexibility.
 use clap::Clap;
 use rusqlite::Error;
 
 mod database;
 
-/// This doc string acts as a help message when the user runs '--help'
-/// as do all doc strings on fields
 #[derive(Clap)]
-#[clap(version = "1.0", author = "Kevin K.")]
+#[clap(version = "1.0", author = "DaRealFreak")]
 struct Opts {
-    /// Sets a custom config file. Could have been an Option<T> with no default too
-    #[clap(short = "c", long = "config", default_value = "default.conf")]
+    /// Use a custom configuration file.
+    #[clap(short = "c", long = "config", default_value = "tracker.yaml")]
     config: String,
-    /// Some input. Because this isn't an Option<T> it's required to be used
-    input: String,
     /// A level of verbosity, and can be used multiple times
     #[clap(short = "v", long = "verbose", parse(from_occurrences))]
     verbose: i32,
     #[clap(subcommand)]
-    subcmd: SubCommand,
+    subcmd: AddSubCommand,
 }
 
 #[derive(Clap)]
-enum SubCommand {
-    /// A help message for the Test subcommand
-    #[clap(name = "test", version = "1.3", author = "Someone Else")]
-    Test(Test),
+enum AddSubCommand {
+    #[clap(name = "add")]
+    Add(Add),
+    #[clap(name = "update")]
+    Update(Add),
 }
 
-/// A subcommand for controlling testing
+/// Add an account or item to the database
 #[derive(Clap)]
-struct Test {
+struct Add {
+    #[clap(subcommand)]
+    subcmd: AddItemSubCommand,
+}
+
+#[derive(Clap)]
+enum AddItemSubCommand {
+    #[clap(name = "item")]
+    AddItem(AddItem),
+}
+
+/// Add an item to the database
+#[derive(Clap)]
+struct AddItem {
     /// Print debug info
     #[clap(short = "d")]
-    debug: bool
+    debug: bool,
+    /// Some input. Because this isn't an Option<T> it's required to be used
+    input: Option<String>,
 }
 
 fn main() {
@@ -46,7 +54,6 @@ fn main() {
 
     // Gets a value for config if supplied by user, or defaults to "default.conf"
     println!("Value for config: {}", opts.config);
-    println!("Using input file: {}", opts.input);
 
     // Vary the output based on how many times the user used the "verbose" flag
     // (i.e. 'myprog -v -v -v' or 'myprog -vvv' vs 'myprog -v'
@@ -60,12 +67,9 @@ fn main() {
     // You can handle information about subcommands by requesting their matches by name
     // (as below), requesting just the name used, or both at the same time
     match opts.subcmd {
-        SubCommand::Test(t) => {
-            if t.debug {
-                println!("Printing debug info...");
-            } else {
-                println!("Printing normally...");
-            }
+        AddSubCommand::Add(t) => {
+            println!("add command executed")
         }
+        _ => {}
     }
 }

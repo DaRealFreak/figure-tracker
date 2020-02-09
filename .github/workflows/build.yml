@@ -1,5 +1,15 @@
 name: build
-on: [push, pull_request]
+on:
+  push:
+    paths:
+      - '**.rs'
+      - '**.toml'
+      - '**.lock'
+  pull_request:
+    paths:
+      - '**.rs'
+      - '**.toml'
+      - '**.lock'
 
 jobs:
   build_and_test:

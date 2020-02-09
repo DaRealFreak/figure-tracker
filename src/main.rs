@@ -3,20 +3,30 @@ extern crate env_logger;
 #[macro_use]
 extern crate log;
 
+use std::error::Error;
 use std::io::Write;
+use std::process;
 
 use chrono::Local;
 use clap::Clap;
 use env_logger::Builder;
 use log::LevelFilter;
 
+use crate::database::Database;
+
 mod database;
+
+/// Main application for figure tracker
+struct FigureTracker {
+    options: FigureTrackerOptions,
+    db: Option<Database>,
+}
 
 /// This application tracks wished items on multiple seller/auction sites
 /// and notifies the user about new sales/price drops and price averages
 #[derive(Clap)]
 #[clap(version = "1.0", author = "DaRealFreak")]
-struct FigureTracker {
+struct FigureTrackerOptions {
     /// Use a custom configuration file.
     #[clap(short = "c", long = "config", default_value = "tracker.yaml")]
     config: String,
@@ -24,11 +34,11 @@ struct FigureTracker {
     #[clap(short = "v", long = "verbose", parse(from_occurrences))]
     verbose: i32,
     #[clap(subcommand)]
-    subcmd: AddSubCommand,
+    subcmd: SubCommand,
 }
 
 #[derive(Clap)]
-enum AddSubCommand {
+enum SubCommand {
     #[clap(name = "add")]
     Add(Add),
     #[clap(name = "update")]
@@ -55,11 +65,12 @@ struct AddItem {
     input: Vec<String>,
 }
 
+/// main implementation of the figure tracker
 impl FigureTracker {
     /// initializes the logger across the project
     pub fn initialize_logger(&self) {
         // Gets a value for config if supplied by user, or defaults to "tracker.yaml"
-        println!("Value for config: {}", self.config);
+        println!("Value for config: {}", self.options.config);
 
         // initialize our logger
         let mut logger = Builder::new();
@@ -73,7 +84,7 @@ impl FigureTracker {
         });
 
         // set the log level here
-        match self.verbose {
+        match self.options.verbose {
             0 => { logger.filter(None, LevelFilter::Error); },
             1 => { logger.filter(None, LevelFilter::Warn); },
             2 => { logger.filter(None, LevelFilter::Info); },
@@ -83,26 +94,41 @@ impl FigureTracker {
         // initialize our logger
         logger.init();
     }
+
+    /// open or create the requested SQLite database file, exits if an error occurred
+    pub fn open_database(&mut self) {
+        let db = database::Database::open("figure_tracker.db");
+        if let Err(db) = db {
+            error!("couldn't open database (err: {})", db.description());
+            process::exit(1)
+        }
+
+        self.db = Option::from(db.unwrap());
+    }
+
+    /// main entry point, here the CLI options are parsed
+    pub fn execute(&mut self) {
+        self.initialize_logger();
+        self.open_database();
+
+        match &self.options.subcmd {
+            SubCommand::Add(t) => {
+                match &t.subcmd {
+                    AddItemSubCommand::AddItem(item) => {
+                        info!("adding item to the database: {:?}", item.input);
+                    }
+                }
+            }
+            _ => {
+                info!("test")
+            }
+        }
+    }
 }
 
 fn main() {
-    let _con = database::Database::open("figure_tracker.db");
-
-    let app: FigureTracker = FigureTracker::parse();
-    app.initialize_logger();
-
-    // You can handle information about subcommands by requesting their matches by name
-    // (as below), requesting just the name used, or both at the same time
-    match app.subcmd {
-        AddSubCommand::Add(t) => {
-            match t.subcmd {
-                AddItemSubCommand::AddItem(item) => {
-                    info!("adding item to the database: {:?}", item.input);
-                }
-            }
-        }
-        _ => {
-            info!("test")
-        }
-    }
+    FigureTracker {
+        options: FigureTrackerOptions::parse(),
+        db: None,
+    }.execute();
 }

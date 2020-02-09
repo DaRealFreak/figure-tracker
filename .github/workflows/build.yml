@@ -4,7 +4,10 @@ on: [push, pull_request]
 jobs:
   build_and_test:
     name: Build Release
-    runs-on: [windows-latest, ubuntu-latest, macos-latest]
+    strategy:
+      matrix:
+        platform: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@master
       - uses: actions-rs/cargo@v1

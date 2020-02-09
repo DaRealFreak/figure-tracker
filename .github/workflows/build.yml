@@ -1,0 +1,13 @@
+name: build
+on: [push, pull_request]
+
+jobs:
+  build_and_test:
+    name: Build Release
+    runs-on: [windows-latest, ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@master
+      - uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release --all-features

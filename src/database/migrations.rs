@@ -32,18 +32,36 @@ impl Migration for Database {
     /// create the required tables and alters updated/missing columns on updates
     fn create_migrations(&self) -> Result<(), Error> {
         self.conn.execute(
-            "create table if not exists cat_colors (
-                     id integer primary key,
-                     name text not null unique
+            "CREATE TABLE IF NOT EXISTS accounts
+                (
+                    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user        VARCHAR(255) DEFAULT '',
+                    password    VARCHAR(255) DEFAULT '',
+                    module      VARCHAR(255)    NOT NULL,
+                    disabled    BOOLEAN NOT NULL    DEFAULT FALSE
                  )",
             NO_PARAMS,
         )?;
+
         self.conn.execute(
-            "create table if not exists cats (
-                     id integer primary key,
-                     name text not null,
-                     color_id integer not null references cat_colors(id)
-                 )",
+            "CREATE TABLE IF NOT EXISTS tracked_items
+                (
+                    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                    term        VARCHAR(255) DEFAULT '',
+                    disabled    BOOLEAN      DEFAULT FALSE not null
+                )",
+            NO_PARAMS,
+        )?;
+
+        self.conn.execute(
+            "CREATE TABLE IF NOT EXISTS prices
+                (
+                    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                    item_id     INTEGER NOT NULL    REFERENCES tracked_items(id),
+                    price       INTEGER NOT NULL    DEFAULT '0',
+                    currency    VARCHAR(255)        DEFAULT '',
+                    tstamp      TIMESTAMP           DEFAULT CURRENT_TIMESTAMP
+                )",
             NO_PARAMS,
         )?;
 

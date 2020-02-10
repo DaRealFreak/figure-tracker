@@ -16,3 +16,6 @@ Cargo.lock
 *.db
 *.db-shm
 *.db-wal
+
+# Project created YAML files
+tracker.yaml

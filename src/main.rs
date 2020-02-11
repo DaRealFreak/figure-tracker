@@ -18,6 +18,7 @@ use log::LevelFilter;
 use yaml_rust::{Yaml, YamlLoader};
 
 use crate::database::Database;
+use crate::database::items::Items;
 
 mod database;
 
@@ -67,8 +68,8 @@ enum AddItemSubCommand {
 /// Add an item to the database
 #[derive(Clap)]
 struct AddItem {
-    /// URLs for the item to add
-    input: Vec<String>,
+    /// JAN numbers of the items to add to the tracked items
+    input: Vec<u128>,
 }
 
 /// main implementation of the figure tracker
@@ -88,7 +89,7 @@ impl FigureTracker {
             SubCommand::Add(t) => {
                 match &t.subcmd {
                     AddItemSubCommand::AddItem(item) => {
-                        info!("adding item to the database: {:?}", item.input);
+                        self.add_item(item);
                     }
                 }
             }
@@ -155,6 +156,17 @@ impl FigureTracker {
         }
 
         self.db = Option::from(db.unwrap());
+    }
+
+    /// adds the passed items to the database
+    pub fn add_item(&self, item: &AddItem) {
+        item.input.iter().for_each(|new_item| {
+            if let Err(err) = self.db.as_ref().unwrap().add_item(new_item) {
+                error!("unable to add item to the database (err: {})", err.description());
+            } else {
+                info!("added item to the database: {:?}", new_item);
+            }
+        });
     }
 }
 

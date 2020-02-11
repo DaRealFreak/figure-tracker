@@ -35,10 +35,10 @@ impl Migration for Database {
             "CREATE TABLE IF NOT EXISTS accounts
                 (
                     id          INTEGER PRIMARY KEY AUTOINCREMENT,
-                    user        VARCHAR(255) DEFAULT '',
-                    password    VARCHAR(255) DEFAULT '',
+                    user        VARCHAR(255)                DEFAULT '',
+                    password    VARCHAR(255)                DEFAULT '',
                     module      VARCHAR(255)    NOT NULL,
-                    disabled    BOOLEAN NOT NULL    DEFAULT FALSE
+                    disabled    BOOLEAN         NOT NULL    DEFAULT FALSE
                  )",
             NO_PARAMS,
         )?;
@@ -47,8 +47,10 @@ impl Migration for Database {
             "CREATE TABLE IF NOT EXISTS tracked_items
                 (
                     id          INTEGER PRIMARY KEY AUTOINCREMENT,
-                    term        VARCHAR(255) DEFAULT '',
-                    disabled    BOOLEAN      DEFAULT FALSE not null
+                    jan         INTEGER NOT NULL    UNIQUE  DEFAULT '0',
+                    term        VARCHAR(255)                DEFAULT '',
+                    description VARCHAR(255)                DEFAULT '',
+                    disabled    BOOLEAN                     DEFAULT FALSE NOT NULL
                 )",
             NO_PARAMS,
         )?;

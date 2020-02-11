@@ -12,64 +12,22 @@ use std::path::Path;
 use std::process;
 
 use chrono::Local;
-use clap::Clap;
 use env_logger::Builder;
 use log::LevelFilter;
 use yaml_rust::{Yaml, YamlLoader};
 
+use crate::cli::*;
 use crate::database::Database;
 use crate::database::items::Items;
 
 mod database;
+mod cli;
 
 /// Main application for figure tracker
 struct FigureTracker {
     options: FigureTrackerOptions,
     db: Option<Database>,
     config: Option<Yaml>,
-}
-
-/// This application tracks wished items on multiple seller/auction sites
-/// and notifies the user about new sales/price drops and price averages
-#[derive(Clap)]
-#[clap(version = "1.0", author = "DaRealFreak")]
-struct FigureTrackerOptions {
-    /// Use a custom configuration file.
-    #[clap(short = "c", long = "config", default_value = "tracker.yaml")]
-    config: String,
-    /// A level of verbosity, and can be used multiple times
-    #[clap(short = "v", long = "verbose", parse(from_occurrences))]
-    verbose: i32,
-    #[clap(subcommand)]
-    subcmd: SubCommand,
-}
-
-#[derive(Clap)]
-enum SubCommand {
-    #[clap(name = "add")]
-    Add(Add),
-    #[clap(name = "update")]
-    Update(Add),
-}
-
-/// Add an account or item to the database
-#[derive(Clap)]
-struct Add {
-    #[clap(subcommand)]
-    subcmd: AddItemSubCommand,
-}
-
-#[derive(Clap)]
-enum AddItemSubCommand {
-    #[clap(name = "item")]
-    AddItem(AddItem),
-}
-
-/// Add an item to the database
-#[derive(Clap)]
-struct AddItem {
-    /// JAN numbers of the items to add to the tracked items
-    input: Vec<u128>,
 }
 
 /// main implementation of the figure tracker
@@ -88,13 +46,17 @@ impl FigureTracker {
         match &self.options.subcmd {
             SubCommand::Add(t) => {
                 match &t.subcmd {
-                    AddItemSubCommand::AddItem(item) => {
+                    AddSubCommand::AddItem(item) => {
                         self.add_item(item);
+                    },
+                    AddSubCommand::AddAccount(account) => {
+                        println!("{:?}, {:?}, {:?}", account.username, account.password, account.url);
+                        unimplemented!("not implemented yet")
                     }
                 }
             }
-            _ => {
-                info!("test")
+            SubCommand::Update(_t) => {
+                unimplemented!("not implemented yet")
             }
         }
     }

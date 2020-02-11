@@ -21,6 +21,7 @@ use crate::database::Database;
 use crate::database::items::Items;
 
 mod database;
+mod modules;
 mod cli;
 
 /// Main application for figure tracker

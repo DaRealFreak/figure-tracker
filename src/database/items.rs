@@ -2,6 +2,14 @@ use rusqlite::{Error, params};
 
 use crate::database::Database;
 
+pub(crate) struct Item {
+    pub(crate) id: u128,
+    pub(crate) jan: u128,
+    pub(crate) term: String,
+    pub(crate) description: String,
+    pub(crate) disabled: bool,
+}
+
 /// Items implements all related functionality for items to interact with the database
 pub trait Items {
     fn add_item(&self, jan: &u128) -> Result<usize, Error>;

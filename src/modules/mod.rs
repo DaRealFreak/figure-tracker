@@ -1,6 +1,7 @@
 use std::error::Error;
 use std::process;
 
+use crate::database::items::Item;
 use crate::modules::myfigurecollection::MyFigureCollection;
 
 mod myfigurecollection;
@@ -44,4 +45,12 @@ pub fn test() {
             process::exit(1)
         },
     }
+
+    mfc.get_figure_details(Item {
+        id: 0,
+        jan: 4571245296405,
+        term: "".parse().unwrap(),
+        description: "()".parse().unwrap(),
+        disabled: false,
+    })
 }

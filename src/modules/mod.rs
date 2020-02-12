@@ -1,7 +1,6 @@
 use std::error::Error;
 use std::process;
 
-use crate::database::items::Item;
 use crate::modules::myfigurecollection::MyFigureCollection;
 
 mod myfigurecollection;
@@ -24,8 +23,8 @@ trait BaseModule {
 }
 
 impl<T> Module for T
-where
-    T: BaseModule,
+    where
+        T: BaseModule,
 {
     fn get_lowest_price(&self) -> Result<Price, Box<dyn Error>> {
         debug!("checking price from module: {:?}", self.get_module_key());
@@ -56,12 +55,4 @@ pub fn test() {
             process::exit(1)
         }
     }
-
-    mfc.get_figure_details(Item {
-        id: 0,
-        jan: 4571245296405,
-        term: "".parse().unwrap(),
-        description: "()".parse().unwrap(),
-        disabled: false,
-    })
 }

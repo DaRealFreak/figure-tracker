@@ -3,12 +3,12 @@ use rusqlite::{Connection, Error};
 use crate::database::migrations::Migration;
 
 // expose database modules
-pub(crate) mod migrations;
 pub(crate) mod items;
+pub(crate) mod migrations;
 
 /// Database contains the persisting database connection for all database operations
 pub(crate) struct Database {
-    pub(crate) conn: Connection
+    pub(crate) conn: Connection,
 }
 
 /// Database is the entry point for all database operations

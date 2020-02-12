@@ -1,4 +1,4 @@
-use rusqlite::{Error, params};
+use rusqlite::{params, Error};
 
 use crate::database::Database;
 

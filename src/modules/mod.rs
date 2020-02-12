@@ -23,11 +23,17 @@ trait BaseModule {
     fn matches_url(&self, url: &str) -> bool;
 }
 
-impl<T> Module for T where T: BaseModule {
+impl<T> Module for T
+where
+    T: BaseModule,
+{
     fn get_lowest_price(&self) -> Result<Price, Box<dyn Error>> {
         debug!("checking price from module: {:?}", self.get_module_key());
 
-        Ok(Price { new: 16.0, used: 15.0 })
+        Ok(Price {
+            new: 16.0,
+            used: 15.0,
+        })
     }
 }
 
@@ -37,13 +43,18 @@ pub fn test() {
     let mfc = MyFigureCollection {};
 
     match mfc.get_lowest_price() {
-        Ok(price_info) => {
-            info!("price info: new -> {:?}, used -> {:?}", price_info.new, price_info.used)
-        },
+        Ok(price_info) => info!(
+            "price info: new -> {:?}, used -> {:?}",
+            price_info.new, price_info.used
+        ),
         Err(err) => {
-            warn!("unable to retrieve lowest price from module {:?} (err: {})", mfc.get_module_key(), err.description());
+            warn!(
+                "unable to retrieve lowest price from module {:?} (err: {})",
+                mfc.get_module_key(),
+                err.description()
+            );
             process::exit(1)
-        },
+        }
     }
 
     mfc.get_figure_details(Item {

@@ -15,11 +15,9 @@ impl Migration for Database {
     fn uses_wal_journal(&self) -> Result<bool, Error> {
         let res: Result<String, Error>;
 
-        res = self.conn.query_row(
-            "pragma journal_mode",
-            NO_PARAMS,
-            |row| row.get(0),
-        );
+        res = self
+            .conn
+            .query_row("pragma journal_mode", NO_PARAMS, |row| row.get(0));
 
         Ok(res? == "wal")
     }

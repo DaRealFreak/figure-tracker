@@ -5,7 +5,7 @@ extern crate log;
 extern crate yaml_rust;
 
 use std::error::Error;
-use std::fs::{File, read_to_string};
+use std::fs::{read_to_string, File};
 use std::io;
 use std::io::Write;
 use std::path::Path;
@@ -17,12 +17,12 @@ use log::LevelFilter;
 use yaml_rust::{Yaml, YamlLoader};
 
 use crate::cli::*;
-use crate::database::Database;
 use crate::database::items::Items;
+use crate::database::Database;
 
+mod cli;
 mod database;
 mod modules;
-mod cli;
 
 /// Main application for figure tracker
 struct FigureTracker {
@@ -38,27 +38,29 @@ impl FigureTracker {
         self.initialize_logger();
 
         if let Err(err) = self.parse_configuration() {
-            error!("couldn't parse or create the configuration (err: {})", err.description());
+            error!(
+                "couldn't parse or create the configuration (err: {})",
+                err.description()
+            );
             process::exit(1)
         };
 
         self.open_database();
 
         match &self.options.subcmd {
-            SubCommand::Add(t) => {
-                match &t.subcmd {
-                    AddSubCommand::AddItem(item) => {
-                        self.add_item(item);
-                    },
-                    AddSubCommand::AddAccount(account) => {
-                        println!("{:?}, {:?}, {:?}", account.username, account.password, account.url);
-                        unimplemented!("not implemented yet")
-                    }
+            SubCommand::Add(t) => match &t.subcmd {
+                AddSubCommand::AddItem(item) => {
+                    self.add_item(item);
                 }
-            }
-            SubCommand::Update(_t) => {
-                unimplemented!("not implemented yet")
-            }
+                AddSubCommand::AddAccount(account) => {
+                    println!(
+                        "{:?}, {:?}, {:?}",
+                        account.username, account.password, account.url
+                    );
+                    unimplemented!("not implemented yet")
+                }
+            },
+            SubCommand::Update(_t) => unimplemented!("not implemented yet"),
         }
     }
 
@@ -70,20 +72,29 @@ impl FigureTracker {
         // initialize our logger
         let mut logger = Builder::new();
         logger.format(|buf, record| {
-            writeln!(buf,
-                     "{} [{}] - {}",
-                     Local::now().format("%Y-%m-%dT%H:%M:%S"),
-                     record.level(),
-                     record.args()
+            writeln!(
+                buf,
+                "{} [{}] - {}",
+                Local::now().format("%Y-%m-%dT%H:%M:%S"),
+                record.level(),
+                record.args()
             )
         });
 
         // set the log level here
         match self.options.verbose {
-            0 => { logger.filter(None, LevelFilter::Error); },
-            1 => { logger.filter(None, LevelFilter::Warn); },
-            2 => { logger.filter(None, LevelFilter::Info); },
-            3 | _ => { logger.filter(None, LevelFilter::Debug); },
+            0 => {
+                logger.filter(None, LevelFilter::Error);
+            }
+            1 => {
+                logger.filter(None, LevelFilter::Warn);
+            }
+            2 => {
+                logger.filter(None, LevelFilter::Info);
+            }
+            3 | _ => {
+                logger.filter(None, LevelFilter::Debug);
+            }
         }
 
         // initialize our logger
@@ -100,7 +111,8 @@ impl FigureTracker {
         }
 
         let config_content = read_to_string(self.options.config.as_str())?;
-        self.config = Option::from(YamlLoader::load_from_str(config_content.as_str()).unwrap()[0].clone());
+        self.config =
+            Option::from(YamlLoader::load_from_str(config_content.as_str()).unwrap()[0].clone());
 
         Ok(())
     }
@@ -125,7 +137,10 @@ impl FigureTracker {
     pub fn add_item(&self, item: &AddItem) {
         item.input.iter().for_each(|new_item| {
             if let Err(err) = self.db.as_ref().unwrap().add_item(new_item) {
-                error!("unable to add item to the database (err: {})", err.description());
+                error!(
+                    "unable to add item to the database (err: {})",
+                    err.description()
+                );
             } else {
                 info!("added item to the database: {:?}", new_item);
             }
@@ -138,5 +153,6 @@ fn main() {
         options: FigureTrackerOptions::parse(),
         db: None,
         config: None,
-    }.execute();
+    }
+    .execute();
 }

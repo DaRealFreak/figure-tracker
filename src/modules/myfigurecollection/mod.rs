@@ -63,13 +63,16 @@ impl MyFigureCollection {
     }
 
     /// update the figure details
-    pub fn update_figure_details(&self, mut item: Item) -> Result<(), Box<dyn Error>> {
+    pub fn update_figure_details(&self, mut item: &mut Item) -> Result<(), Box<dyn Error>> {
         let resp = reqwest::blocking::get(&MyFigureCollection::get_figure_url(item.clone()))?;
         let document = Html::parse_document(&resp.text()?);
 
         let mut terms: Vec<String> = vec![];
         for key in vec!["character", "company", "scale"].iter() {
-            terms.push(MyFigureCollection::get_figure_attribute_from_doc(document.clone(), *key)?);
+            terms.push(MyFigureCollection::get_figure_attribute_from_doc(
+                document.clone(),
+                *key,
+            )?);
         }
 
         item.description = MyFigureCollection::get_figure_title_from_doc(document.clone());
@@ -92,11 +95,17 @@ impl BaseModule for MyFigureCollection {
 #[test]
 pub fn test_get_figure_details() {
     let mfc = MyFigureCollection {};
-    mfc.update_figure_details(Item {
+    let item = &mut Item {
         id: 0,
         jan: 4571245296405,
-        term: "".parse().unwrap(),
         description: "()".parse().unwrap(),
+        term: "".parse().unwrap(),
         disabled: false,
-    });
+    };
+
+    mfc.update_figure_details(item);
+
+    println!("{:?}", item.jan);
+    println!("{:?}", item.description);
+    println!("{:?}", item.term);
 }

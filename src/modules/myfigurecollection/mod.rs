@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::error::Error;
 
 use scraper::{Html, Selector};
@@ -9,38 +8,38 @@ use crate::modules::BaseModule;
 pub(crate) struct MyFigureCollection {}
 
 impl MyFigureCollection {
-    pub fn get_figure_details(&self, mut item: Item) -> Result<(), Box<dyn Error>> {
-        let url = format!(
+    /// retrieve the URL for the item based on the JAN/EAN number
+    fn get_figure_url(item: Item) -> String {
+        format!(
             "https://myfigurecollection.net/browse.v4.php?barcode={:?}",
             item.jan
-        );
-        let resp = reqwest::blocking::get(&url)?;
-        let mut attributes = HashMap::new();
+        )
+    }
 
-        let document = Html::parse_document(&resp.text()?);
-        let title_selector = Selector::parse("h1 > span[itemprop='name']").unwrap();
+    /// retrieve the title of the figure from the HTML document of the detail page
+    fn get_figure_title_from_doc(document: Html) -> String {
+        let selector = Selector::parse("h1 > span[itemprop='name']").unwrap();
 
-        let description_element_ref = document.select(&title_selector).next().unwrap();
-        attributes.insert(
-            String::from("title"),
-            description_element_ref
-                .value()
-                .attr("title")
-                .unwrap()
-                .parse()
-                .unwrap(),
-        );
+        let description_element_ref = document.select(&selector).next().unwrap();
+        description_element_ref
+            .value()
+            .attr("title")
+            .unwrap()
+            .parse()
+            .unwrap()
+    }
 
+    /// retrieve the scale of the figure from the HTML document of the detail page
+    fn get_figure_scale_from_doc(document: Html) -> String {
         let item_scale_selector = Selector::parse("div.split-right.righter a.item-scale").unwrap();
         let item_scale_element_ref = document.select(&item_scale_selector).next().unwrap();
-        attributes.insert(
-            String::from("scale"),
-            item_scale_element_ref.text().collect::<Vec<_>>().join(""),
-        );
+        item_scale_element_ref.text().collect::<Vec<_>>().join("")
+    }
 
-        let attributes_selector =
-            Selector::parse("div.split-right.righter div.form > div.form-field").unwrap();
-        for element in document.select(&attributes_selector) {
+    /// retrieve a generic attribute of the figure from the HTML document of the detail page
+    fn get_figure_attribute_from_doc(document: Html, attr: &str) -> Result<String, &str> {
+        let selector = Selector::parse("div.split-right.righter div.form-field").unwrap();
+        for element in document.select(&selector) {
             let label_selector = Selector::parse("div.form-label").unwrap();
             let value_selector = Selector::parse("a[href] > span").unwrap();
             let label = element
@@ -51,23 +50,29 @@ impl MyFigureCollection {
                 .next()
                 .unwrap()
                 .to_lowercase();
-            if label == "character" || label == "company" {
+            if label == attr {
                 let value = element.select(&value_selector).next();
-                if value != None {
-                    attributes.insert(
-                        String::from(label),
-                        value.unwrap().text().next().unwrap().to_string(),
-                    );
+                if value == None {
+                    return Ok("".to_string());
                 }
+                return Ok(value.unwrap().text().next().unwrap().to_string());
             }
         }
 
-        let mut terms: Vec<&str> = vec![];
+        Err("no such attribute")
+    }
+
+    /// update the figure details
+    pub fn update_figure_details(&self, mut item: Item) -> Result<(), Box<dyn Error>> {
+        let resp = reqwest::blocking::get(&MyFigureCollection::get_figure_url(item.clone()))?;
+        let document = Html::parse_document(&resp.text()?);
+
+        let mut terms: Vec<String> = vec![];
         for key in vec!["character", "company", "scale"].iter() {
-            terms.push(attributes.get(*key).unwrap());
+            terms.push(MyFigureCollection::get_figure_attribute_from_doc(document.clone(), *key)?);
         }
 
-        item.description = attributes.get("title").unwrap().to_string();
+        item.description = MyFigureCollection::get_figure_title_from_doc(document.clone());
         item.term = terms.join(" ");
 
         Ok(())
@@ -87,7 +92,7 @@ impl BaseModule for MyFigureCollection {
 #[test]
 pub fn test_get_figure_details() {
     let mfc = MyFigureCollection {};
-    mfc.get_figure_details(Item {
+    mfc.update_figure_details(Item {
         id: 0,
         jan: 4571245296405,
         term: "".parse().unwrap(),

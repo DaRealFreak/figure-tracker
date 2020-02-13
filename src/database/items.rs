@@ -1,7 +1,8 @@
-use rusqlite::{params, Error};
+use rusqlite::{Error, params};
 
 use crate::database::Database;
 
+#[derive(Clone)]
 pub(crate) struct Item {
     pub(crate) id: u128,
     pub(crate) jan: u128,

@@ -23,8 +23,8 @@ trait BaseModule {
 }
 
 impl<T> Module for T
-    where
-        T: BaseModule,
+where
+    T: BaseModule,
 {
     fn get_lowest_price(&self) -> Result<Price, Box<dyn Error>> {
         debug!("checking price from module: {:?}", self.get_module_key());

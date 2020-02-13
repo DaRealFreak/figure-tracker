@@ -19,10 +19,6 @@ features = ["yaml"]
 version = "0.10.1"
 features = ["blocking", "json"]
 
-[dependencies.tokio]
-version = "0.2.11"
-features = ["full"]
-
 [dependencies]
 scraper = "0.11.0"
 log = "0.4.8"

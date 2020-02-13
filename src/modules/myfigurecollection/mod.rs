@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::error::Error;
 
 use scraper::{Html, Selector};
@@ -14,22 +15,28 @@ impl MyFigureCollection {
             item.jan
         );
         let resp = reqwest::blocking::get(&url)?;
+        let mut attributes = HashMap::new();
 
         let document = Html::parse_document(&resp.text()?);
         let title_selector = Selector::parse("h1 > span[itemprop='name']").unwrap();
 
         let description_element_ref = document.select(&title_selector).next().unwrap();
-        item.description = description_element_ref
-            .value()
-            .attr("title")
-            .unwrap()
-            .parse()
-            .unwrap();
+        attributes.insert(
+            String::from("title"),
+            description_element_ref
+                .value()
+                .attr("title")
+                .unwrap()
+                .parse()
+                .unwrap(),
+        );
 
         let item_scale_selector = Selector::parse("div.split-right.righter a.item-scale").unwrap();
         let item_scale_element_ref = document.select(&item_scale_selector).next().unwrap();
-        let scale = item_scale_element_ref.text().collect::<Vec<_>>().join("");
-        println!("scale: {:?}", scale);
+        attributes.insert(
+            String::from("scale"),
+            item_scale_element_ref.text().collect::<Vec<_>>().join(""),
+        );
 
         let attributes_selector =
             Selector::parse("div.split-right.righter div.form > div.form-field").unwrap();
@@ -42,18 +49,26 @@ impl MyFigureCollection {
                 .unwrap()
                 .text()
                 .next()
-                .unwrap();
-            if label == "Character" || label == "Company" {
+                .unwrap()
+                .to_lowercase();
+            if label == "character" || label == "company" {
                 let value = element.select(&value_selector).next();
                 if value != None {
-                    println!(
-                        "Attribute: {:?}, Value: {:?}",
-                        label,
-                        value.unwrap().text().next().unwrap()
+                    attributes.insert(
+                        String::from(label),
+                        value.unwrap().text().next().unwrap().to_string(),
                     );
                 }
             }
         }
+
+        let mut terms: Vec<&str> = vec![];
+        for key in vec!["character", "company", "scale"].iter() {
+            terms.push(attributes.get(*key).unwrap());
+        }
+
+        item.description = attributes.get("title").unwrap().to_string();
+        item.term = terms.join(" ");
 
         Ok(())
     }

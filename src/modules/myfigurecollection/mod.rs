@@ -90,6 +90,11 @@ impl MyFigureCollection {
 }
 
 impl BaseModule for MyFigureCollection {
+    /// generate instance of Module
+    fn new() -> Self {
+        MyFigureCollection {}
+    }
+
     fn get_module_key(&self) -> &str {
         "myfigurecollection.net"
     }

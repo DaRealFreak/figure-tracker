@@ -1,9 +1,6 @@
 use std::error::Error;
-use std::process;
 
-use crate::modules::myfigurecollection::MyFigureCollection;
-
-mod myfigurecollection;
+pub(crate) mod myfigurecollection;
 
 /// Price is a simple struct for prices including an option for new and used conditions
 struct Price {
@@ -33,26 +30,5 @@ where
             new: 16.0,
             used: 15.0,
         })
-    }
-}
-
-/// small test function for the Module implementation
-#[test]
-pub fn test() {
-    let mfc = MyFigureCollection {};
-
-    match mfc.get_lowest_price() {
-        Ok(price_info) => info!(
-            "price info: new -> {:?}, used -> {:?}",
-            price_info.new, price_info.used
-        ),
-        Err(err) => {
-            warn!(
-                "unable to retrieve lowest price from module {:?} (err: {})",
-                mfc.get_module_key(),
-                err.description()
-            );
-            process::exit(1)
-        }
     }
 }

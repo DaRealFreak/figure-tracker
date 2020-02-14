@@ -37,7 +37,7 @@ impl MyFigureCollection {
     }
 
     /// retrieve a generic attribute of the figure from the HTML document of the detail page
-    fn get_figure_attribute_from_doc(document: Html, attr: &str) -> Result<String, &str> {
+    fn get_figure_attribute_from_doc(document: Html, attr: &str) -> Result<String, String> {
         let selector = Selector::parse("div.split-right.righter div.form-field").unwrap();
         for element in document.select(&selector) {
             let label_selector = Selector::parse("div.form-label").unwrap();
@@ -59,21 +59,28 @@ impl MyFigureCollection {
             }
         }
 
-        Err("no such attribute")
+        Err(format!(
+            "attribute {:?} not found in the figure details",
+            attr
+        ))
     }
 
     /// update the figure details
-    pub fn update_figure_details(&self, mut item: &mut Item) -> Result<(), Box<dyn Error>> {
+    pub fn update_figure_details(mut item: &mut Item) -> Result<(), Box<dyn Error>> {
         let resp = reqwest::blocking::get(&MyFigureCollection::get_figure_url(item.clone()))?;
         let document = Html::parse_document(&resp.text()?);
 
         let mut terms: Vec<String> = vec![];
-        for key in vec!["character", "company", "scale"].iter() {
-            terms.push(MyFigureCollection::get_figure_attribute_from_doc(
-                document.clone(),
-                *key,
-            )?);
+        for key in vec!["character", "company"].iter() {
+            let attr = MyFigureCollection::get_figure_attribute_from_doc(document.clone(), *key);
+            if attr.is_ok() {
+                terms.push(attr.unwrap());
+            }
         }
+
+        terms.push(MyFigureCollection::get_figure_scale_from_doc(
+            document.clone(),
+        ));
 
         item.description = MyFigureCollection::get_figure_title_from_doc(document.clone());
         item.term = terms.join(" ");
@@ -94,16 +101,15 @@ impl BaseModule for MyFigureCollection {
 
 #[test]
 pub fn test_get_figure_details() {
-    let mfc = MyFigureCollection {};
     let item = &mut Item {
         id: 0,
         jan: 4571245296405,
-        description: "()".parse().unwrap(),
-        term: "".parse().unwrap(),
+        description: "".to_string(),
+        term: "".to_string(),
         disabled: false,
     };
 
-    mfc.update_figure_details(item);
+    assert!(MyFigureCollection::update_figure_details(item).is_ok());
 
     println!("{:?}", item.jan);
     println!("{:?}", item.description);

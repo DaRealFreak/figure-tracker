@@ -42,7 +42,7 @@ pub(crate) enum AddSubCommand {
 #[derive(Clap)]
 pub(crate) struct AddItem {
     /// JAN numbers of the items to add to the tracked items
-    pub(crate) input: Vec<u128>,
+    pub(crate) input: Vec<i64>,
 }
 
 /// Add an account to the database

@@ -21,6 +21,7 @@ use crate::cli::*;
 use crate::database::items::{Item, Items};
 use crate::database::Database;
 use crate::modules::myfigurecollection::MyFigureCollection;
+use crate::modules::ModulePool;
 
 mod cli;
 mod database;
@@ -29,6 +30,7 @@ mod modules;
 /// Main application for figure tracker
 struct FigureTracker {
     options: FigureTrackerOptions,
+    module_pool: ModulePool,
     db: Option<Database>,
     config: Option<Yaml>,
 }
@@ -39,6 +41,7 @@ impl FigureTracker {
     pub fn new() -> FigureTracker {
         FigureTracker {
             options: FigureTrackerOptions::parse(),
+            module_pool: ModulePool::new(),
             db: None,
             config: None,
         }

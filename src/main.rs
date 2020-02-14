@@ -4,6 +4,7 @@ extern crate env_logger;
 extern crate log;
 extern crate yaml_rust;
 
+use std::borrow::BorrowMut;
 use std::error::Error;
 use std::fs::{read_to_string, File};
 use std::io;
@@ -17,8 +18,9 @@ use log::LevelFilter;
 use yaml_rust::{Yaml, YamlLoader};
 
 use crate::cli::*;
-use crate::database::items::Items;
+use crate::database::items::{Item, Items};
 use crate::database::Database;
+use crate::modules::myfigurecollection::MyFigureCollection;
 
 mod cli;
 mod database;
@@ -48,7 +50,7 @@ impl FigureTracker {
 
         if let Err(err) = self.parse_configuration() {
             error!(
-                "couldn't parse or create the configuration (err: {})",
+                "couldn't parse or create the configuration (err: \"{}\")",
                 err.description()
             );
             process::exit(1)
@@ -135,7 +137,7 @@ impl FigureTracker {
 
         let db = database::Database::open("figure_tracker.db");
         if let Err(db) = db {
-            error!("couldn't open database (err: {})", db.description());
+            error!("couldn't open database (err: \"{}\")", db.description());
             process::exit(1)
         }
 
@@ -143,17 +145,39 @@ impl FigureTracker {
     }
 
     /// adds the passed items to the database
-    pub fn add_item(&self, item: &AddItem) {
-        item.input.iter().for_each(|new_item| {
-            if let Err(err) = self.db.as_ref().unwrap().add_item(new_item) {
-                error!(
-                    "unable to add item to the database (err: {})",
+    pub fn add_item(&self, add_item: &AddItem) {
+        add_item.input.iter().for_each(|new_item| {
+            match self.db.as_ref().unwrap().add_item(new_item) {
+                Ok(mut item) => {
+                    info!("added item to the database: \"{:?}\"", item.jan);
+                    self.update_info(item.borrow_mut());
+                }
+                Err(err) => error!(
+                    "unable to add item to the database (err: \"{}\")",
                     err.description()
-                );
-            } else {
-                info!("added item to the database: {:?}", new_item);
+                ),
             }
         });
+    }
+
+    /// update the information of the passed item using the MFC database
+    pub fn update_info(&self, item: &mut Item) {
+        match MyFigureCollection::update_figure_details(item) {
+            Ok(_) => match self.db.as_ref().unwrap().update_item(item.to_owned()) {
+                Ok(_) => info!(
+                    "updated figure information (title: \"{}\", term: \"{}\")",
+                    item.description, item.term
+                ),
+                Err(err) => warn!(
+                    "unable to update figure information (err: \"{}\")",
+                    err.description()
+                ),
+            },
+            Err(err) => warn!(
+                "unable to update figure information (err: \"{}\")",
+                err.description()
+            ),
+        }
     }
 }
 

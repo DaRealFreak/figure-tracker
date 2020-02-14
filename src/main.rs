@@ -33,6 +33,15 @@ struct FigureTracker {
 
 /// main implementation of the figure tracker
 impl FigureTracker {
+    /// initializing function parsing the CLI options
+    pub fn new() -> FigureTracker {
+        FigureTracker {
+            options: FigureTrackerOptions::parse(),
+            db: None,
+            config: None,
+        }
+    }
+
     /// main entry point, here the CLI options are parsed
     pub fn execute(&mut self) {
         self.initialize_logger();
@@ -149,10 +158,5 @@ impl FigureTracker {
 }
 
 fn main() {
-    FigureTracker {
-        options: FigureTrackerOptions::parse(),
-        db: None,
-        config: None,
-    }
-    .execute();
+    FigureTracker::new().execute();
 }

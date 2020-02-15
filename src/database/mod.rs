@@ -4,6 +4,7 @@ use crate::database::migrations::Migration;
 
 // expose database modules
 pub(crate) mod items;
+pub(crate) mod prices;
 pub(crate) mod migrations;
 
 /// Database contains the persisting database connection for all database operations

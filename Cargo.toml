@@ -8,7 +8,7 @@ edition = "2018"
 
 [dependencies.rusqlite]
 version = "0.21.0"
-features = ["bundled"]
+features = ["bundled", "chrono"]
 
 [dependencies.clap]
 git = "https://github.com/clap-rs/clap"

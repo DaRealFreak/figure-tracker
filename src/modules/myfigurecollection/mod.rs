@@ -1,9 +1,11 @@
 use std::error::Error;
 
+use chrono::Utc;
 use scraper::{Html, Selector};
 
-use crate::database::items::Item;
-use crate::modules::BaseModule;
+use crate::database::items::{Item, ItemConditions};
+use crate::database::prices::Price;
+use crate::modules::{BaseModule, Prices};
 
 pub(crate) struct MyFigureCollection {}
 
@@ -97,6 +99,20 @@ impl BaseModule for MyFigureCollection {
 
     fn get_module_key(&self) -> &str {
         "myfigurecollection.net"
+    }
+
+    fn get_lowest_prices(&self, _item: Item) -> Result<Prices, Box<dyn Error>> {
+        Ok(Prices {
+            new: Option::from(Price {
+                id: None,
+                price: 10.02,
+                url: self.get_module_key().to_string(),
+                currency: "Yen".to_string(),
+                condition: ItemConditions::New,
+                timestamp: Utc::now(),
+            }),
+            used: None,
+        })
     }
 
     fn matches_url(&self, _url: &str) -> bool {

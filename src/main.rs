@@ -19,6 +19,7 @@ use yaml_rust::{Yaml, YamlLoader};
 
 use crate::cli::*;
 use crate::database::items::{Item, Items};
+use crate::database::prices::Prices;
 use crate::database::Database;
 use crate::modules::myfigurecollection::MyFigureCollection;
 use crate::modules::ModulePool;
@@ -74,15 +75,18 @@ impl FigureTracker {
                     unimplemented!("not implemented yet")
                 }
             },
-            SubCommand::Update(_t) => unimplemented!("not implemented yet"),
+            SubCommand::Update(t) => match &t.subcmd {
+                UpdateSubCommand::UpdateItem(_item) => unimplemented!(),
+                UpdateSubCommand::UpdateAccount(_account) => unimplemented!(),
+                UpdateSubCommand::UpdatePrices(_t) => {
+                    self.update_prices();
+                }
+            },
         }
     }
 
     /// initializes the logger across the project
     pub fn initialize_logger(&self) {
-        // Gets a value for config if supplied by user, or defaults to "tracker.yaml"
-        println!("Value for config: {}", self.options.config);
-
         // initialize our logger
         let mut logger = Builder::new();
         logger.format(|buf, record| {
@@ -113,6 +117,9 @@ impl FigureTracker {
 
         // initialize our logger
         logger.init();
+
+        // small info about which config file was used
+        info!("Value for config: {}", self.options.config);
     }
 
     /// parses the passed/default configuration file or creates it if it doesn't exist yet
@@ -178,6 +185,38 @@ impl FigureTracker {
             },
             Err(err) => warn!(
                 "unable to update figure information (err: \"{}\")",
+                err.description()
+            ),
+        }
+    }
+
+    /// updates the prices of all tracked items
+    pub fn update_prices(&self) {
+        match self.db.as_ref().unwrap().get_items() {
+            Ok(items) => {
+                for item in items {
+                    let new_prices = self.module_pool.check_item(item.clone());
+                    for price in new_prices {
+                        match self
+                            .db
+                            .as_ref()
+                            .unwrap()
+                            .add_price(item.clone(), price.clone())
+                        {
+                            Ok(()) => info!(
+                                "detected price for \"{}\" at url: \"{}\": price \"{:?}\" (condition: \"{:?}\")",
+                                item.term, price.url, price.price, price.condition
+                            ),
+                            Err(err) => warn!(
+                                "unable to add price to the database (err: \"{}\")",
+                                err.description()
+                            ),
+                        }
+                    }
+                }
+            }
+            Err(err) => warn!(
+                "unable to retrieve items from the database (err: \"{}\")",
                 err.description()
             ),
         }

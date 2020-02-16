@@ -13,6 +13,7 @@ use std::path::Path;
 use std::process;
 
 use chrono::Local;
+use clap::Clap;
 use env_logger::Builder;
 use log::LevelFilter;
 use yaml_rust::{Yaml, YamlLoader};

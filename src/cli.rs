@@ -20,7 +20,7 @@ pub(crate) enum SubCommand {
     #[clap(name = "add")]
     Add(Add),
     #[clap(name = "update")]
-    Update(Add),
+    Update(Update),
 }
 
 /// Add an account or item to the database
@@ -36,6 +36,23 @@ pub(crate) enum AddSubCommand {
     AddItem(AddItem),
     #[clap(name = "account")]
     AddAccount(AddAccount),
+}
+
+/// Update prices, items or accounts in to the database
+#[derive(Clap)]
+pub(crate) struct Update {
+    #[clap(subcommand)]
+    pub(crate) subcmd: UpdateSubCommand,
+}
+
+#[derive(Clap)]
+pub(crate) enum UpdateSubCommand {
+    #[clap(name = "item")]
+    UpdateItem(UpdateItem),
+    #[clap(name = "account")]
+    UpdateAccount(UpdateAccount),
+    #[clap(name = "prices")]
+    UpdatePrices(UpdatePrices),
 }
 
 /// Add an item to the database
@@ -58,3 +75,15 @@ pub(crate) struct AddAccount {
     #[clap(short = "U", long = "url")]
     pub(crate) url: String,
 }
+
+/// Update an item manually in the database
+#[derive(Clap)]
+pub(crate) struct UpdateItem {}
+
+/// Update an account manually in the database
+#[derive(Clap)]
+pub(crate) struct UpdateAccount {}
+
+/// Update prices from all registered modules
+#[derive(Clap)]
+pub(crate) struct UpdatePrices {}

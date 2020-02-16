@@ -120,7 +120,7 @@ impl FigureTracker {
         logger.init();
 
         // small info about which config file was used
-        info!("Value for config: {}", self.options.config);
+        info!("value for config: {}", self.options.config);
     }
 
     /// parses the passed/default configuration file or creates it if it doesn't exist yet
@@ -205,8 +205,8 @@ impl FigureTracker {
                             .add_price(item.clone(), price.clone())
                         {
                             Ok(()) => info!(
-                                "detected price for \"{}\" at url: \"{}\": price \"{:?}\" (condition: \"{:?}\")",
-                                item.term, price.url, price.price, price.condition
+                                "detected price for \"{}\" from module: \"{}\": price \"{:?}\" (condition: \"{:?}\")",
+                                item.term, price.module, price.price, price.condition
                             ),
                             Err(err) => warn!(
                                 "unable to add price to the database (err: \"{}\")",

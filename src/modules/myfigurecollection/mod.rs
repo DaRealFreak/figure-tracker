@@ -106,8 +106,9 @@ impl BaseModule for MyFigureCollection {
             new: Option::from(Price {
                 id: None,
                 price: 10.02,
-                url: self.get_module_key().to_string(),
-                currency: "Yen".to_string(),
+                url: "".to_string(),
+                module: self.get_module_key().to_string(),
+                currency: "¥".to_string(),
                 condition: ItemConditions::New,
                 timestamp: Utc::now(),
             }),

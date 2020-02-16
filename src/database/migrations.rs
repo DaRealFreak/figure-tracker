@@ -60,6 +60,7 @@ impl Migration for Database {
                     item_id   INTEGER        NOT NULL REFERENCES tracked_items (id),
                     price     DECIMAL(10, 2) NOT NULL DEFAULT '0',
                     url       VARCHAR(255)            DEFAULT '',
+                    module    VARCHAR(255)            DEFAULT '',
                     currency  VARCHAR(255)            DEFAULT '',
                     condition VARCHAR(255)            DEFAULT '',
                     tstamp    TIMESTAMP               DEFAULT CURRENT_TIMESTAMP

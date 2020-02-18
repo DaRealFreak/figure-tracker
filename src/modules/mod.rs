@@ -1,10 +1,13 @@
 use std::borrow::Borrow;
+use std::convert::TryFrom;
 use std::error::Error;
 
 use crate::database::items::Item;
 use crate::database::prices::Price;
+use crate::modules::amiami::AmiAmi;
 use crate::modules::myfigurecollection::MyFigureCollection;
 
+pub(crate) mod amiami;
 pub(crate) mod myfigurecollection;
 
 /// Prices is a simple struct for prices including an option for new and used conditions
@@ -15,27 +18,26 @@ struct Prices {
 
 /// Module contains the public functionality you can use from the module pool
 trait Module {
-    fn get_module_key(&self) -> &str;
     fn get_lowest_prices(&self, item: Item) -> Result<Prices, Box<dyn Error>>;
 }
 
 /// BaseModule contains all the functionality required from the implemented modules
 trait BaseModule {
-    fn new() -> Self;
-    fn get_module_key(&self) -> &str;
+    fn get_module_key(&self) -> String;
     fn get_lowest_prices(&self, item: Item) -> Result<Prices, Box<dyn Error>>;
     fn matches_url(&self, url: &str) -> bool;
+}
+
+/// InfoModule are special modules with the additional functionality to update the item details
+trait InfoModule {
+    fn get_module_key(&self) -> String;
+    fn update_figure_details(&self, item: &mut Item) -> Result<(), Box<dyn Error>>;
 }
 
 impl<T> Module for T
 where
     T: BaseModule,
 {
-    /// return the module key from the current module
-    fn get_module_key(&self) -> &str {
-        self.get_module_key()
-    }
-
     /// retrieve the lowest prices for new and used items
     fn get_lowest_prices(&self, item: Item) -> Result<Prices, Box<dyn Error>> {
         debug!("checking prices from module: {:?}", self.get_module_key());
@@ -46,6 +48,7 @@ where
 /// ModulePool is the main pool for all implemented modules
 pub(crate) struct ModulePool {
     modules: Vec<Box<dyn Module>>,
+    info_modules: Vec<Box<dyn InfoModule>>,
 }
 
 /// implementation of the module pool
@@ -54,6 +57,10 @@ impl ModulePool {
     pub fn new() -> Self {
         ModulePool {
             modules: vec![Box::from(MyFigureCollection::new())],
+            info_modules: vec![
+                Box::from(MyFigureCollection::new()),
+                Box::from(AmiAmi::new()),
+            ],
         }
     }
 
@@ -77,5 +84,34 @@ impl ModulePool {
             });
 
         collected_prices
+    }
+
+    /// iterates through the info modules and tries to update the item information
+    pub fn update_info(&self, item: &mut Item) -> Result<(), Box<dyn Error>> {
+        let modules: &[Box<dyn InfoModule>] = self.info_modules.borrow();
+        let module_iterator = modules.into_iter();
+
+        for module in module_iterator {
+            match module.update_figure_details(item) {
+                Ok(_) => {
+                    info!(
+                        "updated figure information from module \"{}\" (title: \"{}\", term: \"{}\")",
+                        module.get_module_key(),
+                        item.description, item.term
+                    );
+                    return Ok(());
+                }
+                Err(err) => warn!(
+                    "unable to update figure information from module \"{}\" (err: \"{}\")",
+                    module.get_module_key(),
+                    err.description()
+                ),
+            }
+        }
+
+        Err(
+            Box::try_from("unable to retrieve figure information from any module implementation")
+                .unwrap(),
+        )
     }
 }

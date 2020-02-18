@@ -4,8 +4,8 @@ use crate::database::migrations::Migration;
 
 // expose database modules
 pub(crate) mod items;
-pub(crate) mod prices;
 pub(crate) mod migrations;
+pub(crate) mod prices;
 
 /// Database contains the persisting database connection for all database operations
 pub(crate) struct Database {

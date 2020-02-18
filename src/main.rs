@@ -22,7 +22,6 @@ use crate::cli::*;
 use crate::database::items::{Item, Items};
 use crate::database::prices::Prices;
 use crate::database::Database;
-use crate::modules::myfigurecollection::MyFigureCollection;
 use crate::modules::ModulePool;
 
 mod cli;
@@ -173,19 +172,16 @@ impl FigureTracker {
 
     /// update the information of the passed item using the MFC database
     pub fn update_info(&self, item: &mut Item) {
-        match MyFigureCollection::update_figure_details(item) {
+        match self.module_pool.update_info(item) {
             Ok(_) => match self.db.as_ref().unwrap().update_item(item.to_owned()) {
-                Ok(_) => info!(
-                    "updated figure information (title: \"{}\", term: \"{}\")",
-                    item.description, item.term
-                ),
+                Ok(_) => {}
                 Err(err) => warn!(
                     "unable to update figure information (err: \"{}\")",
                     err.description()
                 ),
             },
             Err(err) => warn!(
-                "unable to update figure information (err: \"{}\")",
+                "unable to find figure information (err: \"{}\")",
                 err.description()
             ),
         }

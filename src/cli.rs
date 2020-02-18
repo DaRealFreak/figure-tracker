@@ -3,7 +3,7 @@ use clap::Clap;
 /// This application tracks wished items on multiple seller/auction sites
 /// and notifies the user about new sales/price drops and price averages
 #[derive(Clap, Debug)]
-#[clap(version = "1.0", author = "DaRealFreak")]
+#[clap(author, about, version)]
 pub(crate) struct FigureTrackerOptions {
     /// Use a custom configuration file.
     #[clap(short = "c", long = "config", default_value = "tracker.yaml")]

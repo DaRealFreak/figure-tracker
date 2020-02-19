@@ -31,7 +31,7 @@ pub fn test_get_figure_details() {
         id: 0,
         jan: 4_571_245_296_405,
         description: "".to_string(),
-        term: "".to_string(),
+        term_en: "".to_string(),
         disabled: false,
     };
 
@@ -41,5 +41,5 @@ pub fn test_get_figure_details() {
 
     println!("{:?}", item.jan);
     println!("{:?}", item.description);
-    println!("{:?}", item.term);
+    println!("{:?}", item.term_en);
 }

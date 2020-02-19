@@ -202,7 +202,7 @@ impl FigureTracker {
                         {
                             Ok(()) => info!(
                                 "detected price for \"{}\" from module: \"{}\": price \"{:?}\" (condition: \"{:?}\")",
-                                item.term, price.module, price.price, price.condition
+                                item.term_en, price.module, price.price, price.condition
                             ),
                             Err(err) => warn!(
                                 "unable to add price to the database (err: \"{}\")",

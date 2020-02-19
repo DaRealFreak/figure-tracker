@@ -9,7 +9,8 @@ use crate::database::Database;
 pub(crate) struct Item {
     pub(crate) id: i64,
     pub(crate) jan: i64,
-    pub(crate) term: String,
+    pub(crate) term_en: String,
+    pub(crate) term_jp: String,
     pub(crate) description: String,
     pub(crate) disabled: bool,
 }
@@ -56,7 +57,7 @@ pub(crate) trait Items {
 impl Items for Database {
     fn get_items(&self) -> Result<Vec<Item>, Box<dyn Error>> {
         let mut stmt = self.conn.prepare(
-            "SELECT id, jan, term, description, disabled
+            "SELECT id, jan, term_en, term_jp, description, disabled
              FROM tracked_items
              WHERE disabled = 0",
         )?;
@@ -65,9 +66,10 @@ impl Items for Database {
             Ok(Item {
                 id: row.get(0)?,
                 jan: row.get(1)?,
-                term: row.get(2)?,
-                description: row.get(3)?,
-                disabled: row.get(4)?,
+                term_en: row.get(2)?,
+                term_jp: row.get(3)?,
+                description: row.get(4)?,
+                disabled: row.get(5)?,
             })
         })?;
 
@@ -82,7 +84,7 @@ impl Items for Database {
     /// retrieve an item from the database based on their JAN number
     fn get_item(&self, jan: i64) -> Result<Item, Box<dyn Error>> {
         let mut stmt = self.conn.prepare(
-            "SELECT id, jan, term, description, disabled
+            "SELECT id, jan, term_en, term_jp, description, disabled
             FROM tracked_items
             WHERE jan = ?1",
         )?;
@@ -91,9 +93,10 @@ impl Items for Database {
             Ok(Item {
                 id: row.get(0)?,
                 jan: row.get(1)?,
-                term: row.get(2)?,
-                description: row.get(3)?,
-                disabled: row.get(4)?,
+                term_en: row.get(2)?,
+                term_jp: row.get(3)?,
+                description: row.get(4)?,
+                disabled: row.get(5)?,
             })
         })?;
 
@@ -115,13 +118,14 @@ impl Items for Database {
     fn update_item(&self, item: Item) -> Result<(), Box<dyn Error>> {
         let mut stmt = self.conn.prepare(
             "UPDATE tracked_items
-                SET jan = ?1, term = ?2, description = ?3, disabled = ?4
-                WHERE id = ?5",
+                SET jan = ?1, term_en = ?2, term_jp = ?3, description = ?4, disabled = ?5
+                WHERE id = ?6",
         )?;
 
         stmt.execute(params![
             item.jan,
-            item.term,
+            item.term_en,
+            item.term_jp,
             item.description,
             item.disabled,
             item.id,

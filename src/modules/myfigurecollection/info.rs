@@ -102,7 +102,7 @@ impl InfoModule for MyFigureCollection {
         terms.push(Info::get_figure_scale_from_doc(&document)?);
 
         item.description = Info::get_figure_title_from_doc(&document);
-        item.term = terms.join(" ");
+        item.term_en = terms.join(" ");
 
         Ok(())
     }

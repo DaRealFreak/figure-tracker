@@ -95,7 +95,7 @@ impl ModulePool {
                     info!(
                         "updated figure information from module \"{}\" (title: \"{}\", term: \"{}\")",
                         module.get_module_key(),
-                        item.description, item.term
+                        item.description, item.term_en
                     );
                     return Ok(());
                 }

@@ -46,7 +46,8 @@ impl Migration for Database {
                 (
                     id          INTEGER PRIMARY KEY AUTOINCREMENT,
                     jan         INTEGER NOT NULL UNIQUE DEFAULT '0',
-                    term        VARCHAR(255)            DEFAULT '',
+                    term_en     VARCHAR(255)            DEFAULT '',
+                    term_jp     VARCHAR(255)            DEFAULT '',
                     description VARCHAR(255)            DEFAULT '',
                     disabled    BOOLEAN                 DEFAULT FALSE NOT NULL
                 )",

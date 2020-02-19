@@ -122,7 +122,7 @@ impl InfoModule for AmiAmi {
             terms.push(scale)
         }
 
-        item.term = terms.join(" ");
+        item.term_en = terms.join(" ");
 
         Ok(())
     }
@@ -136,7 +136,7 @@ fn test_figure_url() {
         id: 0,
         jan: 6_971_995_420_057,
         description: "".to_string(),
-        term: "".to_string(),
+        term_en: "".to_string(),
         disabled: false,
     };
 
@@ -144,5 +144,5 @@ fn test_figure_url() {
 
     println!("{:?}", item.jan);
     println!("{:?}", item.description);
-    println!("{:?}", item.term);
+    println!("{:?}", item.term_en);
 }

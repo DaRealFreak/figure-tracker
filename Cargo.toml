@@ -19,6 +19,10 @@ features = ["yaml"]
 version = "0.10.1"
 features = ["blocking", "json"]
 
+[dependencies.serde]
+version = "1.0.104"
+features = ["derive"]
+
 [dependencies]
 scraper = "0.11.0"
 log = "0.4.8"

@@ -12,7 +12,7 @@ use crate::modules::InfoModule;
 
 /// the search response returns from the API of AmiAmi
 #[derive(Deserialize)]
-struct ApiSearchResponse {
+pub(crate) struct ApiSearchResponse {
     search_result: ApiSearchResult,
     items: Vec<ApiItem>,
     #[serde(rename = "_embedded")]
@@ -21,13 +21,13 @@ struct ApiSearchResponse {
 
 /// the results contain only the number of the search results
 #[derive(Deserialize)]
-struct ApiSearchResult {
+pub(crate) struct ApiSearchResult {
     total_results: u64,
 }
 
 /// all relevant information regarding the listed items from the API search response
 #[derive(Deserialize, Clone)]
-struct ApiItem {
+pub(crate) struct ApiItem {
     gcode: String,
     gname: String,
     min_price: u64,
@@ -38,13 +38,13 @@ struct ApiItem {
 
 /// the _embedded part of the ApiSearchResponse, contains mostly metadata
 #[derive(Deserialize)]
-struct ApiEmbedded {
+pub(crate) struct ApiEmbedded {
     character_names: Vec<ApiCharacterName>,
 }
 
 /// there character names contain an ID and a name
 #[derive(Deserialize, Clone)]
-struct ApiCharacterName {
+pub(crate) struct ApiCharacterName {
     id: u64,
     name: String,
 }
@@ -60,12 +60,20 @@ impl ApiSearchResponse {
         }
         None
     }
+
+    /// retrieve the URL for the item based on the JAN/EAN number
+    pub fn get_figure_url(&self) -> String {
+        format!(
+            "https://www.amiami.com/eng/detail/?gcode={}",
+            self.items[0].gcode
+        )
+    }
 }
 
-struct Info {}
+pub(crate) struct Info {}
 
 impl Info {
-    fn search(keyword: String) -> Result<ApiSearchResponse, Box<dyn Error>> {
+    pub fn search(keyword: String) -> Result<ApiSearchResponse, Box<dyn Error>> {
         let api_url = format!(
             "https://api.amiami.com/api/v1.0/items?pagemax=20\
              &lang=eng&mcode=7000958879&ransu=APEZOBusRNg5WxhFzJqxzTxC9esUCH48\
@@ -81,14 +89,6 @@ impl Info {
 
         let deserialized_data: ApiSearchResponse = serde_json::from_str(&res.text()?).unwrap();
         Ok(deserialized_data)
-    }
-
-    /// retrieve the URL for the item based on the JAN/EAN number
-    fn get_figure_url(api_response: &ApiSearchResponse) -> String {
-        format!(
-            "https://www.amiami.com/eng/detail/?gcode={}",
-            api_response.items[0].gcode
-        )
     }
 }
 

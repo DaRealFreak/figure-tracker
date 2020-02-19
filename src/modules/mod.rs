@@ -56,7 +56,10 @@ impl ModulePool {
     /// returns the module pool with all the implemented modules
     pub fn new() -> Self {
         ModulePool {
-            modules: vec![Box::from(MyFigureCollection::new())],
+            modules: vec![
+                Box::from(MyFigureCollection::new()),
+                Box::from(AmiAmi::new()),
+            ],
             info_modules: vec![
                 Box::from(MyFigureCollection::new()),
                 Box::from(AmiAmi::new()),

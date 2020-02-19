@@ -29,7 +29,7 @@ pub fn test_get_figure_details() {
 
     let item = &mut Item {
         id: 0,
-        jan: 4571245296405,
+        jan: 4_571_245_296_405,
         description: "".to_string(),
         term: "".to_string(),
         disabled: false,

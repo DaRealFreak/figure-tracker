@@ -64,10 +64,10 @@ impl FigureTracker {
 
         match &self.options.subcmd {
             SubCommand::Add(t) => match &t.subcmd {
-                AddSubCommand::AddItem(item) => {
+                AddSubCommand::Item(item) => {
                     self.add_item(item);
                 }
-                AddSubCommand::AddAccount(account) => {
+                AddSubCommand::Account(account) => {
                     println!(
                         "{:?}, {:?}, {:?}",
                         account.username, account.password, account.url
@@ -76,9 +76,9 @@ impl FigureTracker {
                 }
             },
             SubCommand::Update(t) => match &t.subcmd {
-                UpdateSubCommand::UpdateItem(_item) => unimplemented!(),
-                UpdateSubCommand::UpdateAccount(_account) => unimplemented!(),
-                UpdateSubCommand::UpdatePrices(_t) => {
+                UpdateSubCommand::Item(_item) => unimplemented!(),
+                UpdateSubCommand::Account(_account) => unimplemented!(),
+                UpdateSubCommand::Prices(_t) => {
                     self.update_prices();
                 }
             },
@@ -157,7 +157,7 @@ impl FigureTracker {
     /// adds the passed items to the database
     pub fn add_item(&self, add_item: &AddItem) {
         add_item.input.iter().for_each(|new_item| {
-            match self.db.as_ref().unwrap().add_item(new_item) {
+            match self.db.as_ref().unwrap().add_item(*new_item) {
                 Ok(mut item) => {
                     info!("added item to the database: \"{:?}\"", item.jan);
                     self.update_info(item.borrow_mut());

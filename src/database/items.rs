@@ -47,8 +47,8 @@ impl FromSql for ItemConditions {
 /// Items implements all related functionality for items to interact with the database
 pub(crate) trait Items {
     fn get_items(&self) -> Result<Vec<Item>, Box<dyn Error>>;
-    fn get_item(&self, jan: &i64) -> Result<Item, Box<dyn Error>>;
-    fn add_item(&self, jan: &i64) -> Result<Item, Box<dyn Error>>;
+    fn get_item(&self, jan: i64) -> Result<Item, Box<dyn Error>>;
+    fn add_item(&self, jan: i64) -> Result<Item, Box<dyn Error>>;
     fn update_item(&self, item: Item) -> Result<(), Box<dyn Error>>;
 }
 
@@ -80,7 +80,7 @@ impl Items for Database {
     }
 
     /// retrieve an item from the database based on their JAN number
-    fn get_item(&self, jan: &i64) -> Result<Item, Box<dyn Error>> {
+    fn get_item(&self, jan: i64) -> Result<Item, Box<dyn Error>> {
         let mut stmt = self.conn.prepare(
             "SELECT id, jan, term, description, disabled
             FROM tracked_items
@@ -101,7 +101,7 @@ impl Items for Database {
     }
 
     /// adds an item to the database using only the JAN number
-    fn add_item(&self, jan: &i64) -> Result<Item, Box<dyn Error>> {
+    fn add_item(&self, jan: i64) -> Result<Item, Box<dyn Error>> {
         self.conn.execute(
             "INSERT OR IGNORE INTO tracked_items(jan)
                   VALUES (?1)",

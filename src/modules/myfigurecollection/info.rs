@@ -39,12 +39,8 @@ impl Info {
     fn get_figure_scale_from_doc(document: &Html) -> Result<String, String> {
         let item_scale_selector = Selector::parse("div.split-right.righter a.item-scale").unwrap();
         let item_scale_element_ref = document.select(&item_scale_selector).next();
-        if item_scale_element_ref.is_some() {
-            Ok(item_scale_element_ref
-                .unwrap()
-                .text()
-                .collect::<Vec<_>>()
-                .join(""))
+        if let Some(element) = item_scale_element_ref {
+            Ok(element.text().collect::<Vec<_>>().join(""))
         } else {
             Err("couldn't find the scale attribute".to_string())
         }
@@ -98,8 +94,8 @@ impl InfoModule for MyFigureCollection {
         let mut terms: Vec<String> = vec![];
         for key in vec!["character", "company"].iter() {
             let attr = Info::get_figure_attribute_from_doc(&document, *key);
-            if attr.is_ok() {
-                terms.push(attr.unwrap());
+            if let Ok(attr) = attr {
+                terms.push(attr);
             }
         }
 

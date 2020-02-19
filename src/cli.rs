@@ -33,9 +33,9 @@ pub(crate) struct Add {
 #[derive(Clap, Debug)]
 pub(crate) enum AddSubCommand {
     #[clap(name = "item")]
-    AddItem(AddItem),
+    Item(AddItem),
     #[clap(name = "account")]
-    AddAccount(AddAccount),
+    Account(AddAccount),
 }
 
 /// Update prices, items or accounts in to the database
@@ -48,11 +48,11 @@ pub(crate) struct Update {
 #[derive(Clap, Debug)]
 pub(crate) enum UpdateSubCommand {
     #[clap(name = "item")]
-    UpdateItem(UpdateItem),
+    Item(UpdateItem),
     #[clap(name = "account")]
-    UpdateAccount(UpdateAccount),
+    Account(UpdateAccount),
     #[clap(name = "prices")]
-    UpdatePrices(UpdatePrices),
+    Prices(UpdatePrices),
 }
 
 /// Add an item to the database

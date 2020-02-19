@@ -118,9 +118,8 @@ impl InfoModule for AmiAmi {
 
         terms.push((&api_response.items[0].maker_name).to_string());
 
-        match api_response.get_scale() {
-            Some(scale) => terms.push(scale),
-            None => (),
+        if let Some(scale) = api_response.get_scale() {
+            terms.push(scale)
         }
 
         item.term = terms.join(" ");
@@ -135,7 +134,7 @@ fn test_figure_url() {
 
     let item = &mut Item {
         id: 0,
-        jan: 6971995420057,
+        jan: 6_971_995_420_057,
         description: "".to_string(),
         term: "".to_string(),
         disabled: false,

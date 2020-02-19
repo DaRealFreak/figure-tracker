@@ -1,4 +1,3 @@
-use std::borrow::Borrow;
 use std::convert::TryFrom;
 use std::error::Error;
 
@@ -41,7 +40,7 @@ where
     /// retrieve the lowest prices for new and used items
     fn get_lowest_prices(&self, item: Item) -> Result<Prices, Box<dyn Error>> {
         debug!("checking prices from module: {:?}", self.get_module_key());
-        self.get_lowest_prices(item.clone())
+        self.get_lowest_prices(item)
     }
 }
 
@@ -71,9 +70,8 @@ impl ModulePool {
     pub fn check_item(&self, item: Item) -> Vec<Price> {
         let mut collected_prices: Vec<Price> = vec![];
 
-        let modules: &[Box<dyn Module>] = self.modules.borrow();
-        modules
-            .into_iter()
+        self.modules
+            .iter()
             .for_each(|module| match module.get_lowest_prices(item.to_owned()) {
                 Ok(prices) => {
                     if prices.new.is_some() {
@@ -91,10 +89,7 @@ impl ModulePool {
 
     /// iterates through the info modules and tries to update the item information
     pub fn update_info(&self, item: &mut Item) -> Result<(), Box<dyn Error>> {
-        let modules: &[Box<dyn InfoModule>] = self.info_modules.borrow();
-        let module_iterator = modules.into_iter();
-
-        for module in module_iterator {
+        for module in self.info_modules.iter() {
             match module.update_figure_details(item) {
                 Ok(_) => {
                     info!(

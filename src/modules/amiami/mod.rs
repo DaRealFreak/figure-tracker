@@ -1,5 +1,3 @@
-use crate::database::items::Item;
-
 pub(crate) struct AmiAmi {}
 
 mod base;

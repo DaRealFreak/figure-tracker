@@ -19,7 +19,7 @@ impl BaseModule for MyFigureCollection {
                 id: None,
                 price: 10.02,
                 url: "".to_string(),
-                module: MyFigureCollection::get_module_key().to_string(),
+                module: MyFigureCollection::get_module_key(),
                 currency: "¥".to_string(),
                 condition: ItemConditions::New,
                 timestamp: Utc::now(),

@@ -32,6 +32,7 @@ pub fn test_get_figure_details() {
         jan: 4_571_245_296_405,
         description: "".to_string(),
         term_en: "".to_string(),
+        term_jp: "".to_string(),
         disabled: false,
     };
 
@@ -39,7 +40,8 @@ pub fn test_get_figure_details() {
         .update_figure_details(item)
         .is_ok());
 
-    println!("{:?}", item.jan);
-    println!("{:?}", item.description);
-    println!("{:?}", item.term_en);
+    println!("JAN: {:?}", item.jan);
+    println!("description: {:?}", item.description);
+    println!("english term: {:?}", item.term_en);
+    println!("japanese term: {:?}", item.term_jp);
 }

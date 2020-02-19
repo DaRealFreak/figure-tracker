@@ -46,8 +46,24 @@ impl Info {
         }
     }
 
+    /// retrieve a generic attribute of the figure in the original language
+    /// from the HTML document of the detail page
+    fn get_figure_attribute_from_doc_jp(document: &Html, attr: &str) -> Result<String, String> {
+        Info::get_figure_attribute_from_doc(document, attr, true)
+    }
+
+    /// retrieve a generic attribute of the figure in the translated into the english language
+    /// from the HTML document of the detail page
+    fn get_figure_attribute_from_doc_en(document: &Html, attr: &str) -> Result<String, String> {
+        Info::get_figure_attribute_from_doc(document, attr, false)
+    }
+
     /// retrieve a generic attribute of the figure from the HTML document of the detail page
-    fn get_figure_attribute_from_doc(document: &Html, attr: &str) -> Result<String, String> {
+    fn get_figure_attribute_from_doc(
+        document: &Html,
+        attr: &str,
+        use_original: bool,
+    ) -> Result<String, String> {
         let selector = Selector::parse("div.split-right.righter div.form-field").unwrap();
         for element in document.select(&selector) {
             let label_selector = Selector::parse("div.form-label").unwrap();
@@ -64,6 +80,10 @@ impl Info {
                 let value = element.select(&value_selector).next();
                 if value == None {
                     return Ok("".to_string());
+                }
+
+                if use_original {
+                    return Ok(value.unwrap().value().attr("switch").unwrap().to_string());
                 }
                 return Ok(value.unwrap().text().next().unwrap().to_string());
             }
@@ -91,18 +111,27 @@ impl InfoModule for MyFigureCollection {
 
         let document = Html::parse_document(&res.text()?);
 
-        let mut terms: Vec<String> = vec![];
+        let mut terms_en: Vec<String> = vec![];
+        let mut terms_jp: Vec<String> = vec![];
+
         for key in vec!["character", "company"].iter() {
-            let attr = Info::get_figure_attribute_from_doc(&document, *key);
-            if let Ok(attr) = attr {
-                terms.push(attr);
+            if let Ok(attr) = Info::get_figure_attribute_from_doc_en(&document, *key) {
+                terms_en.push(attr);
+            }
+
+            if let Ok(attr) = Info::get_figure_attribute_from_doc_jp(&document, *key) {
+                terms_jp.push(attr);
             }
         }
 
-        terms.push(Info::get_figure_scale_from_doc(&document)?);
+        if let Ok(scale) = Info::get_figure_scale_from_doc(&document) {
+            terms_en.push(scale.clone());
+            terms_jp.push(scale);
+        }
 
         item.description = Info::get_figure_title_from_doc(&document);
-        item.term_en = terms.join(" ");
+        item.term_en = terms_en.join(" ");
+        item.term_jp = terms_jp.join(" ");
 
         Ok(())
     }

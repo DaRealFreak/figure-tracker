@@ -81,7 +81,7 @@ impl ModulePool {
                         collected_prices.push(prices.used.unwrap());
                     }
                 }
-                Err(err) => warn!("error checking for prices (err: \"{}\")", err.description()),
+                Err(err) => warn!("error checking for prices (err: {:?})", err.description()),
             });
 
         collected_prices
@@ -93,14 +93,14 @@ impl ModulePool {
             match module.update_figure_details(item) {
                 Ok(_) => {
                     info!(
-                        "updated figure information from module \"{}\" (title: \"{}\", term: \"{}\")",
+                        "updated figure information from module {:?} (title: {:?}, term_en: {:?}, term_jp: {:?})",
                         module.get_module_key(),
-                        item.description, item.term_en
+                        item.description, item.term_en, item.term_jp
                     );
                     return Ok(());
                 }
                 Err(err) => warn!(
-                    "unable to update figure information from module \"{}\" (err: \"{}\")",
+                    "unable to update figure information from module {:?} (err: {:?})",
                     module.get_module_key(),
                     err.description()
                 ),

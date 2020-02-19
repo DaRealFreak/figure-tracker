@@ -54,7 +54,7 @@ impl FigureTracker {
 
         if let Err(err) = self.parse_configuration() {
             error!(
-                "couldn't parse or create the configuration (err: \"{}\")",
+                "couldn't parse or create the configuration (err: {:?})",
                 err.description()
             );
             process::exit(1)
@@ -147,7 +147,7 @@ impl FigureTracker {
 
         let db = database::Database::open("figure_tracker.db");
         if let Err(db) = db {
-            error!("couldn't open database (err: \"{}\")", db.description());
+            error!("couldn't open database (err: {:?})", db.description());
             process::exit(1)
         }
 
@@ -159,11 +159,11 @@ impl FigureTracker {
         add_item.input.iter().for_each(|new_item| {
             match self.db.as_ref().unwrap().add_item(*new_item) {
                 Ok(mut item) => {
-                    info!("added item to the database: \"{:?}\"", item.jan);
+                    info!("added item to the database: {:?}", item.jan);
                     self.update_info(item.borrow_mut());
                 }
                 Err(err) => error!(
-                    "unable to add item to the database (err: \"{}\")",
+                    "unable to add item to the database (err: {:?})",
                     err.description()
                 ),
             }
@@ -176,12 +176,12 @@ impl FigureTracker {
             Ok(_) => match self.db.as_ref().unwrap().update_item(item.to_owned()) {
                 Ok(_) => {}
                 Err(err) => warn!(
-                    "unable to update figure information (err: \"{}\")",
+                    "unable to update figure information (err: {:?})",
                     err.description()
                 ),
             },
             Err(err) => warn!(
-                "unable to find figure information (err: \"{}\")",
+                "unable to find figure information (err: {:?})",
                 err.description()
             ),
         }
@@ -201,11 +201,11 @@ impl FigureTracker {
                             .add_price(item.clone(), price.clone())
                         {
                             Ok(()) => info!(
-                                "detected price for \"{}\" from module: \"{}\": price \"{:?}\" (condition: \"{:?}\")",
+                                "detected price for {:?} from module: {:?}: price {:?} (condition: {:?})",
                                 item.term_en, price.module, price.price, price.condition
                             ),
                             Err(err) => warn!(
-                                "unable to add price to the database (err: \"{}\")",
+                                "unable to add price to the database (err: {:?})",
                                 err.description()
                             ),
                         }
@@ -213,7 +213,7 @@ impl FigureTracker {
                 }
             }
             Err(err) => warn!(
-                "unable to retrieve items from the database (err: \"{}\")",
+                "unable to retrieve items from the database (err: {:?})",
                 err.description()
             ),
         }

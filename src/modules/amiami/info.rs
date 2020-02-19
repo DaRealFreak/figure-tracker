@@ -137,6 +137,7 @@ fn test_figure_url() {
         jan: 6_971_995_420_057,
         description: "".to_string(),
         term_en: "".to_string(),
+        term_jp: "".to_string(),
         disabled: false,
     };
 

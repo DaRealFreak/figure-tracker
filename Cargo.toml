@@ -23,6 +23,10 @@ features = ["blocking", "json"]
 version = "1.0.104"
 features = ["derive"]
 
+[dependencies.quick-xml]
+version = "0.17.2"
+features = [ "serialize" ]
+
 [dependencies]
 scraper = "0.11.0"
 log = "0.4.8"

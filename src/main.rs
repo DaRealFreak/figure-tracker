@@ -25,6 +25,7 @@ use crate::database::Database;
 use crate::modules::ModulePool;
 
 mod cli;
+mod currency;
 mod database;
 mod modules;
 

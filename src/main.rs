@@ -26,6 +26,7 @@ mod cli;
 mod configuration;
 mod currency;
 mod database;
+mod http;
 mod modules;
 
 /// Main application for figure tracker

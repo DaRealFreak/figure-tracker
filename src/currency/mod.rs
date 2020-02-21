@@ -3,6 +3,7 @@ use std::error::Error;
 use std::fmt;
 use std::fmt::Display;
 
+use crate::http::get_client;
 use ordered_float::OrderedFloat;
 use serde::Deserialize;
 use strsim::normalized_levenshtein;
@@ -220,9 +221,9 @@ impl CurrencyConversion {
         // insert the base currency here which is not in the exchange information
         exchange_rates.insert(SupportedCurrency::EUR, 1.00);
 
-        let res = reqwest::blocking::get(
-            "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
-        )?;
+        let res = get_client()?
+            .get("https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml")
+            .send()?;
         let envelope: Envelope = quick_xml::de::from_str(&res.text()?).unwrap();
         let currency_guesser = CurrencyGuesser::new();
 

@@ -84,7 +84,7 @@ impl ModulePool {
                         collected_prices.push(prices.used.unwrap());
                     }
                 }
-                Err(err) => warn!("error checking for prices (err: {:?})", err.description()),
+                Err(err) => warn!("error checking for prices (err: {:?})", err),
             });
 
         collected_prices
@@ -105,7 +105,7 @@ impl ModulePool {
                 Err(err) => warn!(
                     "unable to update figure information from module {:?} (err: {:?})",
                     module.get_module_key(),
-                    err.description()
+                    err
                 ),
             }
         }

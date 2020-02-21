@@ -59,7 +59,7 @@ impl FigureTracker {
             }
             Err(err) => error!(
                 "couldn't parse or create the configuration (err: {:?})",
-                err.description()
+                err
             ),
         }
 
@@ -134,7 +134,7 @@ impl FigureTracker {
 
         let db = database::Database::open("figure_tracker.db");
         if let Err(db) = db {
-            error!("couldn't open database (err: {:?})", db.description());
+            error!("couldn't open database (err: {:?})", db);
             process::exit(1)
         }
 
@@ -149,10 +149,7 @@ impl FigureTracker {
                     info!("added item to the database: {:?}", item.jan);
                     self.update_info(item.borrow_mut());
                 }
-                Err(err) => error!(
-                    "unable to add item to the database (err: {:?})",
-                    err.description()
-                ),
+                Err(err) => error!("unable to add item to the database (err: {:?})", err),
             }
         });
     }
@@ -162,15 +159,9 @@ impl FigureTracker {
         match self.module_pool.update_info(item) {
             Ok(_) => match self.db.as_ref().unwrap().update_item(item.to_owned()) {
                 Ok(_) => {}
-                Err(err) => warn!(
-                    "unable to update figure information (err: {:?})",
-                    err.description()
-                ),
+                Err(err) => warn!("unable to update figure information (err: {:?})", err),
             },
-            Err(err) => warn!(
-                "unable to find figure information (err: {:?})",
-                err.description()
-            ),
+            Err(err) => warn!("unable to find figure information (err: {:?})", err),
         }
     }
 
@@ -193,7 +184,7 @@ impl FigureTracker {
                             ),
                             Err(err) => warn!(
                                 "unable to add price to the database (err: {:?})",
-                                err.description()
+                                err
                             ),
                         }
                     }
@@ -201,7 +192,7 @@ impl FigureTracker {
             }
             Err(err) => warn!(
                 "unable to retrieve items from the database (err: {:?})",
-                err.description()
+                err
             ),
         }
     }

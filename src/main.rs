@@ -6,25 +6,24 @@ extern crate yaml_rust;
 
 use std::borrow::BorrowMut;
 use std::error::Error;
-use std::fs::{read_to_string, File};
-use std::io;
 use std::io::Write;
-use std::path::Path;
 use std::process;
 
 use chrono::Local;
 use clap::Clap;
 use env_logger::Builder;
 use log::LevelFilter;
-use yaml_rust::{Yaml, YamlLoader};
+use yaml_rust::Yaml;
 
 use crate::cli::*;
+use crate::configuration::Configuration;
 use crate::database::items::{Item, Items};
 use crate::database::prices::Prices;
 use crate::database::Database;
 use crate::modules::ModulePool;
 
 mod cli;
+mod configuration;
 mod currency;
 mod database;
 mod modules;
@@ -40,26 +39,28 @@ struct FigureTracker {
 /// main implementation of the figure tracker
 impl FigureTracker {
     /// initializing function parsing the CLI options
-    pub fn new() -> FigureTracker {
-        FigureTracker {
+    pub fn new() -> Result<Self, Box<dyn Error>> {
+        Ok(FigureTracker {
             options: FigureTrackerOptions::parse(),
-            module_pool: ModulePool::new(),
+            module_pool: ModulePool::new()?,
             db: None,
             config: None,
-        }
+        })
     }
 
     /// main entry point, here the CLI options are parsed
     pub fn execute(&mut self) {
         self.initialize_logger();
 
-        if let Err(err) = self.parse_configuration() {
-            error!(
+        match Configuration::get_configuration() {
+            Ok(config) => {
+                self.config = Some(config);
+            }
+            Err(err) => error!(
                 "couldn't parse or create the configuration (err: {:?})",
                 err.description()
-            );
-            process::exit(1)
-        };
+            ),
+        }
 
         self.open_database();
 
@@ -121,22 +122,6 @@ impl FigureTracker {
 
         // small info about which config file was used
         info!("value for config: {}", self.options.config);
-    }
-
-    /// parses the passed/default configuration file or creates it if it doesn't exist yet
-    pub fn parse_configuration(&mut self) -> Result<(), io::Error> {
-        if !Path::new(self.options.config.as_str()).exists() {
-            let bytes = include_bytes!("../default.yaml");
-
-            let mut file = File::create(self.options.config.as_str())?;
-            file.write_all(bytes)?;
-        }
-
-        let config_content = read_to_string(self.options.config.as_str())?;
-        self.config =
-            Option::from(YamlLoader::load_from_str(config_content.as_str()).unwrap()[0].clone());
-
-        Ok(())
     }
 
     /// open or create the requested SQLite database file, exits if an error occurred
@@ -222,5 +207,7 @@ impl FigureTracker {
 }
 
 fn main() {
-    FigureTracker::new().execute();
+    if let Ok(mut app) = FigureTracker::new() {
+        app.execute();
+    }
 }

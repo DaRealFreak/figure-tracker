@@ -1,7 +1,7 @@
-pub(crate) struct AmiAmi {}
-
 mod base;
 mod info;
+
+pub(crate) struct AmiAmi {}
 
 impl AmiAmi {
     pub fn new() -> Self {

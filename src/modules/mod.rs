@@ -1,6 +1,7 @@
 use std::convert::TryFrom;
 use std::error::Error;
 
+use crate::currency::CurrencyConversion;
 use crate::database::items::Item;
 use crate::database::prices::Price;
 use crate::modules::amiami::AmiAmi;
@@ -48,13 +49,14 @@ where
 pub(crate) struct ModulePool {
     modules: Vec<Box<dyn Module>>,
     info_modules: Vec<Box<dyn InfoModule>>,
+    conversion: CurrencyConversion,
 }
 
 /// implementation of the module pool
 impl ModulePool {
     /// returns the module pool with all the implemented modules
-    pub fn new() -> Self {
-        ModulePool {
+    pub fn new() -> Result<Self, Box<dyn Error>> {
+        Ok(ModulePool {
             modules: vec![
                 Box::from(MyFigureCollection::new()),
                 Box::from(AmiAmi::new()),
@@ -63,7 +65,8 @@ impl ModulePool {
                 Box::from(MyFigureCollection::new()),
                 Box::from(AmiAmi::new()),
             ],
-        }
+            conversion: CurrencyConversion::new()?,
+        })
     }
 
     /// checks all modules for the prices of the passed item

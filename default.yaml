@@ -1,2 +1,10 @@
 database:
   path: figure_tracker.db
+general:
+  currency: EUR
+connection:
+  proxy:
+    host:
+    port: 80
+    username:
+    password:

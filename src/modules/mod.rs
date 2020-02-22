@@ -58,12 +58,12 @@ impl ModulePool {
     pub fn new() -> Result<Self, Box<dyn Error>> {
         Ok(ModulePool {
             modules: vec![
-                Box::from(MyFigureCollection::new()),
-                Box::from(AmiAmi::new()),
+                Box::from(MyFigureCollection::new()?),
+                Box::from(AmiAmi::new()?),
             ],
             info_modules: vec![
-                Box::from(MyFigureCollection::new()),
-                Box::from(AmiAmi::new()),
+                Box::from(MyFigureCollection::new()?),
+                Box::from(AmiAmi::new()?),
             ],
             conversion: CurrencyConversion::new()?,
         })

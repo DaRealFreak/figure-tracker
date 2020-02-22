@@ -1,16 +1,21 @@
 use std::error::Error;
 
 use crate::database::items::Item;
+use crate::http::get_client;
 
 mod base;
 mod info;
 
-pub(crate) struct MyFigureCollection {}
+pub(crate) struct MyFigureCollection {
+    client: reqwest::blocking::Client,
+}
 
 impl MyFigureCollection {
     /// create new instance of MFC
-    pub fn new() -> Self {
-        MyFigureCollection {}
+    pub fn new() -> Result<Self, Box<dyn Error>> {
+        Ok(MyFigureCollection {
+            client: get_client()?,
+        })
     }
 
     pub fn get_module_key() -> String {
@@ -37,6 +42,7 @@ pub fn test_get_figure_details() {
     };
 
     assert!(MyFigureCollection::new()
+        .unwrap()
         .update_figure_details(item)
         .is_ok());
 

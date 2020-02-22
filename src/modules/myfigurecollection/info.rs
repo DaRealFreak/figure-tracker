@@ -10,10 +10,12 @@ use crate::modules::myfigurecollection::MyFigureCollection;
 use crate::modules::InfoModule;
 
 /// small private struct for the not exposed functionality of the InfoModule implementation
-struct Info {}
+struct Info<'a> {
+    pub(crate) inner: &'a MyFigureCollection,
+}
 
 /// the private part of the InfoModule implementation
-impl Info {
+impl Info<'_> {
     /// retrieve the URL for the item based on the JAN/EAN number
     fn get_figure_url(item: &Item) -> String {
         format!(
@@ -103,7 +105,7 @@ impl InfoModule for MyFigureCollection {
 
     /// update the figure details
     fn update_figure_details(&self, mut item: &mut Item) -> Result<(), Box<dyn Error>> {
-        let res = get(&Info::get_figure_url(&item))?;
+        let res = self.client.get(&Info::get_figure_url(&item)).send()?;
 
         if !Regex::new(r"^https://myfigurecollection.net/item/")?.is_match(res.url().as_str()) {
             return Err(Box::try_from("no item found by passed JAN").unwrap());

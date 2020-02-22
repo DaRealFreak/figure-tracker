@@ -14,7 +14,7 @@ impl BaseModule for AmiAmi {
     }
 
     fn get_lowest_prices(&self, item: Item) -> Result<Prices, Box<dyn Error>> {
-        let api_response = Info::search(item.jan.to_string())?;
+        let api_response = Info { inner: self }.search(item.jan.to_string())?;
         Ok(Prices {
             new: Option::from(Price {
                 id: None,

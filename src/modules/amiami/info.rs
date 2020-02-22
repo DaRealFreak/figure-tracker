@@ -70,10 +70,17 @@ impl ApiSearchResponse {
     }
 }
 
-pub(crate) struct Info {}
+pub(crate) struct Info<'a> {
+    pub(crate) inner: &'a AmiAmi,
+}
 
-impl Info {
-    pub fn search(keyword: String) -> Result<ApiSearchResponse, Box<dyn Error>> {
+impl Info<'_> {
+    /// retrieve new instance of the Info implementation
+    fn new(inner: &AmiAmi) -> Info<'_> {
+        Info { inner }
+    }
+
+    pub fn search(&self, keyword: String) -> Result<ApiSearchResponse, Box<dyn Error>> {
         let api_url = format!(
             "https://api.amiami.com/api/v1.0/items?pagemax=20\
              &lang=eng&mcode=7000958879&ransu=APEZOBusRNg5WxhFzJqxzTxC9esUCH48\
@@ -81,8 +88,9 @@ impl Info {
             keyword
         );
 
-        let client = Client::new();
-        let res = client
+        let res = self
+            .inner
+            .client
             .get(&api_url)
             .header("X-User-Key", "amiami_dev")
             .send()?;
@@ -101,7 +109,7 @@ impl InfoModule for AmiAmi {
 
     /// update the figure details with the extracted information from the search
     fn update_figure_details(&self, mut item: &mut Item) -> Result<(), Box<dyn Error>> {
-        let api_response = &Info::search(item.jan.to_string())?;
+        let api_response = Info::new(self).search(item.jan.to_string())?;
 
         match api_response.search_result.total_results {
             0 => return Err(Box::try_from("no search results found").unwrap()),
@@ -141,7 +149,7 @@ fn test_figure_url() {
         disabled: false,
     };
 
-    assert!(AmiAmi::new().update_figure_details(item).is_ok());
+    assert!(AmiAmi::new().unwrap().update_figure_details(item).is_ok());
 
     println!("{:?}", item.jan);
     println!("{:?}", item.description);

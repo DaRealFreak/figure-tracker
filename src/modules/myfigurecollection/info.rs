@@ -2,7 +2,6 @@ use std::convert::TryFrom;
 use std::error::Error;
 
 use regex::Regex;
-use reqwest::blocking::get;
 use scraper::{Html, Selector};
 
 use crate::database::items::Item;

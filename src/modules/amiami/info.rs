@@ -3,7 +3,6 @@ use std::error::Error;
 use std::result::Result::Err;
 
 use regex::Regex;
-use reqwest::blocking::Client;
 use serde::Deserialize;
 
 use crate::database::items::Item;

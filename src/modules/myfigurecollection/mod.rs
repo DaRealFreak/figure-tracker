@@ -1,7 +1,11 @@
+use std::convert::TryFrom;
 use std::error::Error;
+
+use regex::Regex;
 
 use crate::database::items::Item;
 use crate::http::get_client;
+use std::str::FromStr;
 
 mod base;
 mod info;
@@ -22,10 +26,54 @@ impl MyFigureCollection {
         "myfigurecollection.net".to_string()
     }
 
-    /// retrieve the MFC item ID
-    fn get_figure_id(item: Item) -> Result<u32, Box<dyn Error>> {
-        Ok(0)
+    /// retrieve the URL for the item based on the JAN/EAN number
+    fn get_figure_url(item: &Item) -> String {
+        format!(
+            "https://myfigurecollection.net/browse.v4.php?barcode={:?}",
+            item.jan
+        )
     }
+
+    /// retrieve the MFC item ID
+    fn get_figure_id(&self, item: &Item) -> Result<u32, Box<dyn Error>> {
+        let figure_id_regex =
+            Regex::new(r"^https://myfigurecollection.net/item/(?P<item_id>\d+).*$")?;
+        let res = self
+            .client
+            .get(MyFigureCollection::get_figure_url(&item).as_str())
+            .send()?;
+
+        if !figure_id_regex.is_match(res.url().as_str()) {
+            return Err(Box::try_from("no item found by passed JAN").unwrap());
+        }
+
+        Ok(figure_id_regex
+            .captures(res.url().as_str())
+            .and_then(|cap| {
+                cap.name("item_id")
+                    .map(|item_id| u32::from_str(item_id.as_str()).unwrap())
+            })
+            .unwrap())
+    }
+}
+
+#[test]
+pub fn test_get_figure_id() {
+    let item = &mut Item {
+        id: 0,
+        jan: 4_571_245_298_836,
+        description: "".to_string(),
+        term_en: "".to_string(),
+        term_jp: "".to_string(),
+        disabled: false,
+    };
+
+    let mfc = MyFigureCollection {
+        client: reqwest::blocking::Client::builder().build().unwrap(),
+    };
+
+    println!("{:?}", mfc.get_figure_id(item));
+    assert!(mfc.get_figure_id(item).is_ok());
 }
 
 #[test]
@@ -41,10 +89,11 @@ pub fn test_get_figure_details() {
         disabled: false,
     };
 
-    assert!(MyFigureCollection::new()
-        .unwrap()
-        .update_figure_details(item)
-        .is_ok());
+    let mfc = MyFigureCollection {
+        client: reqwest::blocking::Client::builder().build().unwrap(),
+    };
+
+    assert!(mfc.update_figure_details(item).is_ok());
 
     println!("JAN: {:?}", item.jan);
     println!("description: {:?}", item.description);

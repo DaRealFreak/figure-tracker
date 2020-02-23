@@ -15,14 +15,6 @@ struct Info<'a> {
 
 /// the private part of the InfoModule implementation
 impl Info<'_> {
-    /// retrieve the URL for the item based on the JAN/EAN number
-    fn get_figure_url(item: &Item) -> String {
-        format!(
-            "https://myfigurecollection.net/browse.v4.php?barcode={:?}",
-            item.jan
-        )
-    }
-
     /// retrieve the title of the figure from the HTML document of the detail page
     fn get_figure_title_from_doc(document: &Html) -> String {
         let selector = Selector::parse("h1 > span[itemprop='name']").unwrap();
@@ -104,7 +96,10 @@ impl InfoModule for MyFigureCollection {
 
     /// update the figure details
     fn update_figure_details(&self, mut item: &mut Item) -> Result<(), Box<dyn Error>> {
-        let res = self.client.get(&Info::get_figure_url(&item)).send()?;
+        let res = self
+            .client
+            .get(MyFigureCollection::get_figure_url(&item).as_str())
+            .send()?;
 
         if !Regex::new(r"^https://myfigurecollection.net/item/")?.is_match(res.url().as_str()) {
             return Err(Box::try_from("no item found by passed JAN").unwrap());

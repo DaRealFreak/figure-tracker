@@ -13,7 +13,6 @@ impl BaseModule for MyFigureCollection {
     }
 
     fn get_lowest_prices(&self, item: Item) -> Result<Prices, Box<dyn Error>> {
-        let figure_id = MyFigureCollection::get_figure_id(item)?;
         Ok(Prices {
             new: Option::from(Price {
                 id: None,

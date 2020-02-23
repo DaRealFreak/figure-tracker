@@ -36,12 +36,11 @@ pub fn get_client() -> Result<reqwest::blocking::Client, Box<dyn Error>> {
                 "{}:{:?}",
                 &proxy_host,
                 config["connection"]["proxy"]["port"].as_i64().unwrap()
-            )
-            .to_string();
+            );
         }
 
         // create the proxy
-        let mut proxy = reqwest::Proxy::all(proxy_host.as_str())?;
+        let mut proxy = reqwest::Proxy::all(proxy_host)?;
 
         // if a username is set we also require a password
         if is_config_proxy_key_set(&config, "username".to_string())

@@ -12,7 +12,13 @@ impl BaseModule for MyFigureCollection {
         MyFigureCollection::get_module_key()
     }
 
-    fn get_lowest_prices(&self, item: Item) -> Result<Prices, Box<dyn Error>> {
+    fn get_lowest_prices(&self, item: &Item) -> Result<Prices, Box<dyn Error>> {
+        let _search_url = format!(
+            "https://myfigurecollection.net/classified.php?type=0&itemId={}",
+            self.get_figure_id(&item)?
+        );
+        // ToDo: retrieving HTML and parsing results
+
         Ok(Prices {
             new: Option::from(Price {
                 id: None,
@@ -29,5 +35,27 @@ impl BaseModule for MyFigureCollection {
 
     fn matches_url(&self, _url: &str) -> bool {
         unimplemented!("not implemented yet")
+    }
+}
+
+#[test]
+pub fn test_get_lowest_prices() {
+    let item = &mut Item {
+        id: 0,
+        jan: 4580416940283,
+        description: "".to_string(),
+        term_en: "".to_string(),
+        term_jp: "".to_string(),
+        disabled: false,
+    };
+
+    let mfc = MyFigureCollection {
+        client: reqwest::blocking::Client::builder().build().unwrap(),
+    };
+
+    assert!(mfc.get_lowest_prices(item).is_ok());
+    match mfc.get_lowest_prices(item) {
+        Err(err) => println!("{}", err),
+        _ => {}
     }
 }

@@ -18,13 +18,13 @@ struct Prices {
 
 /// Module contains the public functionality you can use from the module pool
 trait Module {
-    fn get_lowest_prices(&self, item: Item) -> Result<Prices, Box<dyn Error>>;
+    fn get_lowest_prices(&self, item: &Item) -> Result<Prices, Box<dyn Error>>;
 }
 
 /// BaseModule contains all the functionality required from the implemented modules
 trait BaseModule {
     fn get_module_key(&self) -> String;
-    fn get_lowest_prices(&self, item: Item) -> Result<Prices, Box<dyn Error>>;
+    fn get_lowest_prices(&self, item: &Item) -> Result<Prices, Box<dyn Error>>;
     fn matches_url(&self, url: &str) -> bool;
 }
 
@@ -39,7 +39,7 @@ where
     T: BaseModule,
 {
     /// retrieve the lowest prices for new and used items
-    fn get_lowest_prices(&self, item: Item) -> Result<Prices, Box<dyn Error>> {
+    fn get_lowest_prices(&self, item: &Item) -> Result<Prices, Box<dyn Error>> {
         debug!("checking prices from module: {:?}", self.get_module_key());
         self.get_lowest_prices(item)
     }
@@ -70,12 +70,12 @@ impl ModulePool {
     }
 
     /// checks all modules for the prices of the passed item
-    pub fn check_item(&self, item: Item) -> Vec<Price> {
+    pub fn check_item(&self, item: &Item) -> Vec<Price> {
         let mut collected_prices: Vec<Price> = vec![];
 
         self.modules
             .iter()
-            .for_each(|module| match module.get_lowest_prices(item.to_owned()) {
+            .for_each(|module| match module.get_lowest_prices(item) {
                 Ok(prices) => {
                     if prices.new.is_some() {
                         collected_prices.push(prices.new.unwrap());

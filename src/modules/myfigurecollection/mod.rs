@@ -1,11 +1,11 @@
 use std::convert::TryFrom;
 use std::error::Error;
+use std::str::FromStr;
 
 use regex::Regex;
 
 use crate::database::items::Item;
 use crate::http::get_client;
-use std::str::FromStr;
 
 mod base;
 mod info;
@@ -38,11 +38,14 @@ impl MyFigureCollection {
     fn get_figure_id(&self, item: &Item) -> Result<u32, Box<dyn Error>> {
         let figure_id_regex =
             Regex::new(r"^https://myfigurecollection.net/item/(?P<item_id>\d+).*$")?;
+
         let res = self
             .client
             .get(MyFigureCollection::get_figure_url(&item).as_str())
             .send()?;
 
+        // FixMe: this will currently fail on figures with re-releases (f.e. 4934054783441)
+        // we should parse the result amount too if the URL is not a match directly
         if !figure_id_regex.is_match(res.url().as_str()) {
             return Err(Box::try_from("no item found by passed JAN").unwrap());
         }

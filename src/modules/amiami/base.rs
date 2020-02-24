@@ -13,7 +13,7 @@ impl BaseModule for AmiAmi {
         AmiAmi::get_module_key()
     }
 
-    fn get_lowest_prices(&self, item: Item) -> Result<Prices, Box<dyn Error>> {
+    fn get_lowest_prices(&self, item: &Item) -> Result<Prices, Box<dyn Error>> {
         let api_response = Info { inner: self }.search(item.jan.to_string())?;
         Ok(Prices {
             new: Option::from(Price {

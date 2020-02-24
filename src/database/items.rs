@@ -50,7 +50,7 @@ pub(crate) trait Items {
     fn get_items(&self) -> Result<Vec<Item>, Box<dyn Error>>;
     fn get_item(&self, jan: i64) -> Result<Item, Box<dyn Error>>;
     fn add_item(&self, jan: i64) -> Result<Item, Box<dyn Error>>;
-    fn update_item(&self, item: Item) -> Result<(), Box<dyn Error>>;
+    fn update_item(&self, item: &Item) -> Result<(), Box<dyn Error>>;
 }
 
 /// Items is the implementation of the Items trait
@@ -89,7 +89,7 @@ impl Items for Database {
             WHERE jan = ?1",
         )?;
 
-        let mut person_iter = stmt.query_map(params![jan.to_string()], |row| {
+        let mut item_iter = stmt.query_map(params![jan.to_string()], |row| {
             Ok(Item {
                 id: row.get(0)?,
                 jan: row.get(1)?,
@@ -100,7 +100,7 @@ impl Items for Database {
             })
         })?;
 
-        Ok(person_iter.next().unwrap()?)
+        Ok(item_iter.next().unwrap()?)
     }
 
     /// adds an item to the database using only the JAN number
@@ -115,7 +115,7 @@ impl Items for Database {
     }
 
     /// synchronize the changes of a mutated item to the database
-    fn update_item(&self, item: Item) -> Result<(), Box<dyn Error>> {
+    fn update_item(&self, item: &Item) -> Result<(), Box<dyn Error>> {
         let mut stmt = self.conn.prepare(
             "UPDATE tracked_items
                 SET jan = ?1, term_en = ?2, term_jp = ?3, description = ?4, disabled = ?5

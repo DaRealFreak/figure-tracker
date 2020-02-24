@@ -19,12 +19,12 @@ pub(crate) struct Price {
 
 /// Prices implements all related functionality for prices to interact with the database
 pub(crate) trait Prices {
-    fn add_price(&self, item: Item, price: Price) -> Result<(), Box<dyn Error>>;
+    fn add_price(&self, item: &Item, price: &Price) -> Result<(), Box<dyn Error>>;
 }
 
 /// Prices is the implementation of the Prices trait
 impl Prices for Database {
-    fn add_price(&self, item: Item, price: Price) -> Result<(), Box<dyn Error>> {
+    fn add_price(&self, item: &Item, price: &Price) -> Result<(), Box<dyn Error>> {
         self.conn.execute(
             "INSERT OR IGNORE INTO prices(item_id, price, url, module, currency, condition, tstamp)
                   VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",

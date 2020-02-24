@@ -147,7 +147,7 @@ impl FigureTracker {
             match self.db.as_ref().unwrap().add_item(*new_item) {
                 Ok(mut item) => {
                     info!("added item to the database: {:?}", item.jan);
-                    self.update_info(item.borrow_mut());
+                    self.update_info(item.to_owned().borrow_mut());
                 }
                 Err(err) => error!("unable to add item to the database (err: {:?})", err),
             }
@@ -157,7 +157,7 @@ impl FigureTracker {
     /// update the information of the passed item using the MFC database
     pub fn update_info(&self, item: &mut Item) {
         match self.module_pool.update_info(item) {
-            Ok(_) => match self.db.as_ref().unwrap().update_item(item.to_owned()) {
+            Ok(_) => match self.db.as_ref().unwrap().update_item(&item) {
                 Ok(_) => {}
                 Err(err) => warn!("unable to update figure information (err: {:?})", err),
             },
@@ -176,7 +176,7 @@ impl FigureTracker {
                             .db
                             .as_ref()
                             .unwrap()
-                            .add_price(item.clone(), price.clone())
+                            .add_price(&item, &price)
                         {
                             Ok(()) => info!(
                                 "detected price for {:?} from module: {:?}: price {:?} (condition: {:?})",

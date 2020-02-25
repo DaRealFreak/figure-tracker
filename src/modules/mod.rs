@@ -132,8 +132,7 @@ impl ModulePool {
         // wait for all threads to finish their work
         barrier.wait();
 
-        // use return here since the compiler will complain about dropping the value if not explicitly returned
-        return collected_prices.lock().unwrap().to_vec();
+        collected_prices.clone().lock().unwrap().to_vec()
     }
 
     /// iterates through the info modules and tries to update the item information

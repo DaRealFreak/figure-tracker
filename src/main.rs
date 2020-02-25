@@ -145,7 +145,7 @@ impl FigureTracker {
     pub fn add_item(&self, add_item: &AddItem) {
         add_item.input.iter().for_each(|new_item| {
             match self.db.as_ref().unwrap().add_item(*new_item) {
-                Ok(mut item) => {
+                Ok(item) => {
                     info!("added item to the database: {:?}", item.jan);
                     self.update_info(item.to_owned().borrow_mut());
                 }

@@ -1,7 +1,5 @@
-use std::convert::TryFrom;
 use std::error::Error;
 
-use regex::Regex;
 use scraper::{Html, Selector};
 
 use crate::database::items::Item;
@@ -98,12 +96,8 @@ impl InfoModule for MyFigureCollection {
     fn update_figure_details(&self, mut item: &mut Item) -> Result<(), Box<dyn Error>> {
         let res = self
             .client
-            .get(MyFigureCollection::get_figure_url(&item).as_str())
+            .get(self.get_figure_url(&item)?.as_str())
             .send()?;
-
-        if !Regex::new(r"^https://myfigurecollection.net/item/")?.is_match(res.url().as_str()) {
-            return Err(Box::try_from("no item found by passed JAN").unwrap());
-        }
 
         let document = Html::parse_document(&res.text()?);
 

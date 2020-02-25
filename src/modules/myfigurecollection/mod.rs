@@ -3,6 +3,7 @@ use std::error::Error;
 use std::str::FromStr;
 
 use regex::Regex;
+use scraper::{Html, Selector};
 
 use crate::database::items::Item;
 use crate::http::get_client;
@@ -27,11 +28,49 @@ impl MyFigureCollection {
     }
 
     /// retrieve the URL for the item based on the JAN/EAN number
-    fn get_figure_url(item: &Item) -> String {
+    fn get_figure_url(&self, item: &Item) -> Result<String, Box<dyn Error>> {
+        match self.get_figure_id(item) {
+            Ok(figure_id) => Ok(format!("https://myfigurecollection.net/item/{}", figure_id)),
+            Err(err) => Err(err),
+        }
+    }
+
+    /// retrieve the search URL for the item based on the JAN/EAN number
+    fn get_figure_search_url(item: &Item) -> String {
         format!(
             "https://myfigurecollection.net/browse.v4.php?barcode={:?}",
             item.jan
         )
+    }
+
+    /// handle search response of the barcode search
+    /// figures with multiple matches will also warn about search results
+    /// figures with multiple releases and no additional results will function normally
+    fn get_figure_id_search_response(document: &Html) -> Result<u32, Box<dyn Error>> {
+        let item_selector = Selector::parse("li.listing-item span.item-icon a[href]").unwrap();
+
+        match document.select(&item_selector).count() {
+            0 => return Err(Box::try_from("no search results found").unwrap()),
+            1 => (),
+            _ => warn!("more than 1 result found for item, extracted information could be wrong"),
+        }
+
+        if let Some(test) = document.select(&item_selector).next() {
+            let rel_link = test.value().attr("href").unwrap();
+
+            let rel_figure_regex = Regex::new(r"/item/(?P<item_id>\d+).*$")?;
+            if rel_figure_regex.is_match(rel_link) {
+                return Ok(rel_figure_regex
+                    .captures(rel_link)
+                    .and_then(|cap| {
+                        cap.name("item_id")
+                            .map(|item_id| u32::from_str(item_id.as_str()).unwrap())
+                    })
+                    .unwrap());
+            }
+        }
+
+        Err(Box::try_from("no search results found").unwrap())
     }
 
     /// retrieve the MFC item ID
@@ -41,17 +80,19 @@ impl MyFigureCollection {
 
         let res = self
             .client
-            .get(MyFigureCollection::get_figure_url(&item).as_str())
+            .get(MyFigureCollection::get_figure_search_url(&item).as_str())
             .send()?;
 
-        // FixMe: this will currently fail on figures with re-releases (f.e. 4934054783441)
-        // we should parse the result amount too if the URL is not a match directly
-        if !figure_id_regex.is_match(res.url().as_str()) {
-            return Err(Box::try_from("no item found by passed JAN").unwrap());
+        // move response URL from Url -> &str -> String since retrieving the text will move the value
+        let res_url = res.url().as_str().to_string();
+
+        if !figure_id_regex.is_match(res_url.as_str()) {
+            let document = Html::parse_document(&res.text()?.as_str());
+            return MyFigureCollection::get_figure_id_search_response(&document);
         }
 
         Ok(figure_id_regex
-            .captures(res.url().as_str())
+            .captures(res_url.as_str())
             .and_then(|cap| {
                 cap.name("item_id")
                     .map(|item_id| u32::from_str(item_id.as_str()).unwrap())
@@ -71,12 +112,24 @@ pub fn test_get_figure_id() {
         disabled: false,
     };
 
+    let item_multiple_releases = &mut Item {
+        id: 0,
+        jan: 4_934_054_783_441,
+        description: "".to_string(),
+        term_en: "".to_string(),
+        term_jp: "".to_string(),
+        disabled: false,
+    };
+
     let mfc = MyFigureCollection {
         client: reqwest::blocking::Client::builder().build().unwrap(),
     };
 
-    println!("{:?}", mfc.get_figure_id(item));
     assert!(mfc.get_figure_id(item).is_ok());
+    assert_eq!(mfc.get_figure_id(item).unwrap(), 740258);
+
+    assert!(mfc.get_figure_id(item_multiple_releases).is_ok());
+    assert_eq!(mfc.get_figure_id(item_multiple_releases).unwrap(), 218050);
 }
 
 #[test]

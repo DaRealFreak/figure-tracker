@@ -16,7 +16,7 @@ pub(crate) struct Item {
 }
 
 /// Available item conditions to request for
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug)]
 pub(crate) enum ItemConditions {
     New,
     Used,

@@ -10,6 +10,7 @@ use crate::http::get_client;
 mod base;
 mod info;
 
+#[derive(Clone)]
 pub(crate) struct MyFigureCollection {
     client: reqwest::blocking::Client,
 }

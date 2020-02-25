@@ -1,5 +1,8 @@
 use std::convert::TryFrom;
 use std::error::Error;
+use std::sync::{Arc, Barrier, Mutex};
+
+use threadpool::ThreadPool;
 
 use crate::currency::CurrencyConversion;
 use crate::database::items::Item;
@@ -22,7 +25,7 @@ trait Module {
 }
 
 /// BaseModule contains all the functionality required from the implemented modules
-trait BaseModule {
+trait BaseModule: BaseModuleClone {
     fn get_module_key(&self) -> String;
     fn get_lowest_prices(&self, item: &Item) -> Result<Prices, Box<dyn Error>>;
     fn matches_url(&self, url: &str) -> bool;
@@ -45,10 +48,32 @@ where
     }
 }
 
+/// BaseModuleClone trait to assert the clone_box function
+trait BaseModuleClone {
+    fn clone_box(&self) -> Box<dyn BaseModule + Send + Sync>;
+}
+
+/// use the box clone to implement the Clone trait for thread shareable BaseModule implementations
+impl<T> BaseModuleClone for T
+where
+    T: 'static + BaseModule + Clone + Send + Sync,
+{
+    fn clone_box(&self) -> Box<dyn BaseModule + Send + Sync> {
+        Box::new(self.clone())
+    }
+}
+
+/// clone implementation for our thread safe BaseModule implementation
+impl Clone for Box<dyn BaseModule + Send + Sync> {
+    fn clone(&self) -> Box<dyn BaseModule + Send + Sync> {
+        self.clone_box()
+    }
+}
+
 /// ModulePool is the main pool for all implemented modules
 pub(crate) struct ModulePool {
-    modules: Vec<Box<dyn Module>>,
-    info_modules: Vec<Box<dyn InfoModule>>,
+    modules: Vec<Box<dyn BaseModule + Send + Sync>>,
+    info_modules: Vec<Box<dyn InfoModule + Send + Sync>>,
     conversion: CurrencyConversion,
 }
 
@@ -70,24 +95,45 @@ impl ModulePool {
     }
 
     /// checks all modules for the prices of the passed item
-    pub fn check_item(&self, item: &Item) -> Vec<Price> {
-        let mut collected_prices: Vec<Price> = vec![];
+    pub fn check_item(&self, item: Item) -> Vec<Price> {
+        let collected_prices: Arc<Mutex<Vec<Price>>> = Arc::new(Mutex::new(vec![]));
 
-        self.modules
-            .iter()
-            .for_each(|module| match module.get_lowest_prices(item) {
-                Ok(prices) => {
-                    if prices.new.is_some() {
-                        collected_prices.push(prices.new.unwrap());
+        let pool = ThreadPool::new(self.modules.len());
+        let barrier = Arc::new(Barrier::new(self.modules.len() + 1));
+
+        for i in 0..self.modules.len() {
+            let barrier = barrier.clone();
+            let item = item.clone();
+            let module = self.modules[i].clone();
+            let collected_prices = collected_prices.clone();
+
+            pool.execute(move || {
+                let mut collected_prices = collected_prices.lock().unwrap();
+                match module.get_lowest_prices(&item) {
+                    Ok(prices) => {
+                        if prices.new.is_some() {
+                            collected_prices.push(prices.new.unwrap());
+                        }
+                        if prices.used.is_some() {
+                            collected_prices.push(prices.used.unwrap());
+                        }
                     }
-                    if prices.used.is_some() {
-                        collected_prices.push(prices.used.unwrap());
-                    }
+                    Err(err) => warn!("error checking for prices (err: {:?})", err),
                 }
-                Err(err) => warn!("error checking for prices (err: {:?})", err),
-            });
 
-        collected_prices
+                // release the collected prices again
+                drop(collected_prices);
+
+                // wait for the other threads
+                barrier.wait();
+            });
+        }
+
+        // wait for all threads to finish their work
+        barrier.wait();
+
+        // use return here since the compiler will complain about dropping the value if not explicitly returned
+        return collected_prices.lock().unwrap().to_vec();
     }
 
     /// iterates through the info modules and tries to update the item information

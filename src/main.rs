@@ -147,7 +147,7 @@ impl FigureTracker {
             match self.db.as_ref().unwrap().add_item(*new_item) {
                 Ok(mut item) => {
                     info!("added item to the database: {:?}", item.jan);
-                    self.update_info(item.to_owned().borrow_mut());
+                    self.update_info(item.borrow_mut());
                 }
                 Err(err) => error!("unable to add item to the database (err: {:?})", err),
             }
@@ -170,7 +170,7 @@ impl FigureTracker {
         match self.db.as_ref().unwrap().get_items() {
             Ok(items) => {
                 for item in items {
-                    let new_prices = self.module_pool.check_item(&item);
+                    let new_prices = self.module_pool.check_item(item.clone());
                     for price in new_prices {
                         match self
                             .db

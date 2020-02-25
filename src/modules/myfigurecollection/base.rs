@@ -42,7 +42,7 @@ impl BaseModule for MyFigureCollection {
 pub fn test_get_lowest_prices() {
     let item = &mut Item {
         id: 0,
-        jan: 4580416940283,
+        jan: 4_580_416_940_283,
         description: "".to_string(),
         term_en: "".to_string(),
         term_jp: "".to_string(),
@@ -54,8 +54,7 @@ pub fn test_get_lowest_prices() {
     };
 
     assert!(mfc.get_lowest_prices(item).is_ok());
-    match mfc.get_lowest_prices(item) {
-        Err(err) => println!("{}", err),
-        _ => {}
+    if let Err(err) = mfc.get_lowest_prices(item) {
+        println!("{}", err)
     }
 }

@@ -145,9 +145,9 @@ impl FigureTracker {
     pub fn add_item(&self, add_item: &AddItem) {
         add_item.input.iter().for_each(|new_item| {
             match self.db.as_ref().unwrap().add_item(*new_item) {
-                Ok(item) => {
+                Ok(mut item) => {
                     info!("added item to the database: {:?}", item.jan);
-                    self.update_info(item.to_owned().borrow_mut());
+                    self.update_info(item.borrow_mut());
                 }
                 Err(err) => error!("unable to add item to the database (err: {:?})", err),
             }

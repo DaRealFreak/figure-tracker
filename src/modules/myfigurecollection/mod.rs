@@ -126,10 +126,10 @@ pub fn test_get_figure_id() {
     };
 
     assert!(mfc.get_figure_id(item).is_ok());
-    assert_eq!(mfc.get_figure_id(item).unwrap(), 740258);
+    assert_eq!(mfc.get_figure_id(item).unwrap(), 740_258);
 
     assert!(mfc.get_figure_id(item_multiple_releases).is_ok());
-    assert_eq!(mfc.get_figure_id(item_multiple_releases).unwrap(), 218050);
+    assert_eq!(mfc.get_figure_id(item_multiple_releases).unwrap(), 218_050);
 }
 
 #[test]

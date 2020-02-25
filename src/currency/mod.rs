@@ -3,10 +3,11 @@ use std::error::Error;
 use std::fmt;
 use std::fmt::Display;
 
-use crate::http::get_client;
 use ordered_float::OrderedFloat;
 use serde::Deserialize;
 use strsim::normalized_levenshtein;
+
+use crate::http::get_client;
 
 /// struct to store our supported currencies retrieved from the ECB
 pub(crate) struct CurrencyGuesser {
@@ -268,7 +269,7 @@ fn test_currency_conversion() {
                 converter.convert_price_to(150.0, SupportedCurrency::EUR, SupportedCurrency::USD)
             );
         }
-        Err(_) => assert!(false),
+        Err(err) => panic!(err.to_string()),
     }
 }
 

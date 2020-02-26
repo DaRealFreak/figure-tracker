@@ -5,8 +5,10 @@ use std::str::FromStr;
 use regex::Regex;
 use scraper::{Html, Selector};
 
+use crate::currency::CurrencyConversion;
 use crate::database::items::Item;
 use crate::http::get_client;
+use std::collections::BTreeMap;
 
 mod base;
 mod info;
@@ -14,13 +16,15 @@ mod info;
 #[derive(Clone)]
 pub(crate) struct MyFigureCollection {
     client: reqwest::blocking::Client,
+    conversion: CurrencyConversion,
 }
 
 impl MyFigureCollection {
     /// create new instance of MFC
-    pub fn new() -> Result<Self, Box<dyn Error>> {
+    pub fn new(conversion: CurrencyConversion) -> Result<Self, Box<dyn Error>> {
         Ok(MyFigureCollection {
             client: get_client()?,
+            conversion,
         })
     }
 
@@ -123,6 +127,9 @@ pub fn test_get_figure_id() {
     };
 
     let mfc = MyFigureCollection {
+        conversion: CurrencyConversion {
+            exchange_rates: BTreeMap::new(),
+        },
         client: reqwest::blocking::Client::builder().build().unwrap(),
     };
 
@@ -147,6 +154,9 @@ pub fn test_get_figure_details() {
     };
 
     let mfc = MyFigureCollection {
+        conversion: CurrencyConversion {
+            exchange_rates: BTreeMap::new(),
+        },
         client: reqwest::blocking::Client::builder().build().unwrap(),
     };
 

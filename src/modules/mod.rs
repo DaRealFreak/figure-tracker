@@ -81,16 +81,17 @@ pub(crate) struct ModulePool {
 impl ModulePool {
     /// returns the module pool with all the implemented modules
     pub fn new() -> Result<Self, Box<dyn Error>> {
+        let conversion = CurrencyConversion::new()?;
         Ok(ModulePool {
             modules: vec![
-                Box::from(MyFigureCollection::new()?),
+                Box::from(MyFigureCollection::new(conversion.clone())?),
                 Box::from(AmiAmi::new()?),
             ],
             info_modules: vec![
-                Box::from(MyFigureCollection::new()?),
+                Box::from(MyFigureCollection::new(conversion.clone())?),
                 Box::from(AmiAmi::new()?),
             ],
-            conversion: CurrencyConversion::new()?,
+            conversion,
         })
     }
 

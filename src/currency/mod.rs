@@ -10,6 +10,7 @@ use strsim::normalized_levenshtein;
 use crate::http::get_client;
 
 /// struct to store our supported currencies retrieved from the ECB
+#[derive(Clone)]
 pub(crate) struct CurrencyGuesser {
     currencies: BTreeMap<SupportedCurrency, Vec<String>>,
 }
@@ -63,7 +64,7 @@ impl Display for SupportedCurrency {
 impl CurrencyGuesser {
     /// returns the conversion struct with all currencies
     /// supported by the European Central Bank as of the 19th february 2020
-    fn new() -> Self {
+    pub(crate) fn new() -> Self {
         CurrencyGuesser {
             currencies: [
                 (SupportedCurrency::EUR, vec!["€".to_string()]),
@@ -138,7 +139,7 @@ impl CurrencyGuesser {
 
     /// will check the passed value for supported currency codes and currency symbols
     /// and return the currency code on a match, returns None if no match was found
-    fn guess_currency(&self, value: String) -> Option<&SupportedCurrency> {
+    pub fn guess_currency(&self, value: String) -> Option<&SupportedCurrency> {
         // check currency code matches first since there are no collisions like with the symbol
         if let Some(currency_code) = self.guess_currency_from_code(value.clone(), false) {
             return Some(currency_code);
@@ -173,6 +174,14 @@ impl CurrencyGuesser {
         // nothing found
         None
     }
+
+    /// guess the numerical value of the passed amount
+    /// this will return f.e. for 1.234,00, 1234,00, 1234 and 1,234.00 the float value 1234.0
+    /// also longer numbers are supported too like 1.234.567,00 or 1,234,567.00
+    /// illegal values are returning None like f.e. mixed separators: 1.234,567.00
+    pub fn get_currency_value(value: String) -> Result<f64, Box<dyn Error>> {
+        Ok(0.0)
+    }
 }
 
 /// structs used for the deserialization of the EUR reference values of the ECB
@@ -203,8 +212,9 @@ struct CubeCurrency {
 }
 
 /// struct to use most current exchange rates to convert currencies to one equal currency
+#[derive(Clone)]
 pub(crate) struct CurrencyConversion {
-    exchange_rates: BTreeMap<SupportedCurrency, f64>,
+    pub(crate) exchange_rates: BTreeMap<SupportedCurrency, f64>,
 }
 
 ///implementation for the currency conversion
@@ -298,5 +308,45 @@ fn test_currency_guesses() {
             guesser.guess_currency(test_value.to_string()),
             expected_currency
         );
+    }
+}
+
+#[test]
+pub fn test_currency_value_guesses() {
+    let valid_test_values = vec![
+        // no decimals, no separators
+        "123",
+        // with decimals, no separators
+        "123.00",
+        "123,00",
+        "123456.00",
+        "123456,00",
+        // no decimals, with separators
+        "123.456",
+        "123,456",
+        "123.456.789",
+        "123,456,789",
+        // with decimals, with separators
+        "123.456,00",
+        "123,456.00",
+        "123.456.789,00",
+        "123,456,789.00",
+    ];
+
+    let invalid_test_values = vec![
+        // wrong length between separators
+        "1.2.3",
+        "1,2,3",
+        // mixed separators
+        "1,234.567,00",
+        "1.234,567.00",
+    ];
+
+    for test_value in valid_test_values {
+        assert!(CurrencyGuesser::get_currency_value(test_value.to_string()).is_ok());
+    }
+
+    for test_value in invalid_test_values {
+        assert!(CurrencyGuesser::get_currency_value(test_value.to_string()).is_err())
     }
 }

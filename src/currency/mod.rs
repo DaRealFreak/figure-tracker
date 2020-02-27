@@ -124,14 +124,14 @@ impl CurrencyGuesser {
         &self,
         value: String,
         exact_match: bool,
-    ) -> Option<&SupportedCurrency> {
+    ) -> Option<SupportedCurrency> {
         for (currency_code, _) in self.currencies.iter() {
             if exact_match {
                 if value.eq(currency_code.to_string().as_str()) {
-                    return Some(currency_code);
+                    return Some(currency_code.clone());
                 }
             } else if value.contains(currency_code.to_string().as_str()) {
-                return Some(currency_code);
+                return Some(currency_code.clone());
             }
         }
 
@@ -140,7 +140,7 @@ impl CurrencyGuesser {
 
     /// will check the passed value for supported currency codes and currency symbols
     /// and return the currency code on a match, returns None if no match was found
-    pub fn guess_currency(&self, value: String) -> Option<&SupportedCurrency> {
+    pub fn guess_currency(&self, value: String) -> Option<SupportedCurrency> {
         // check currency code matches first since there are no collisions like with the symbol
         if let Some(currency_code) = self.guess_currency_from_code(value.clone(), false) {
             return Some(currency_code);
@@ -160,7 +160,7 @@ impl CurrencyGuesser {
 
             // keep order of registration if similarity is equal (especially useful for $ currencies)
             if similarities.get(&OrderedFloat(similarity)).is_none() {
-                similarities.insert(OrderedFloat(similarity), currency_code);
+                similarities.insert(OrderedFloat(similarity), currency_code.clone());
             }
         }
 
@@ -168,7 +168,7 @@ impl CurrencyGuesser {
             return if highest_similarity.0.eq(&OrderedFloat(0.0)) {
                 None
             } else {
-                Some(highest_similarity.1)
+                Some(highest_similarity.1.clone())
             };
         }
 
@@ -286,15 +286,15 @@ fn test_currency_conversion() {
 fn test_currency_guesses() {
     let guesser = CurrencyGuesser::new();
 
-    let test_values: Vec<(&str, Option<&SupportedCurrency>)> = vec![
-        ("CAD250.00", Some(&SupportedCurrency::CAD)),
-        ("C$325.00", Some(&SupportedCurrency::CAD)),
-        ("350.31€", Some(&SupportedCurrency::EUR)),
-        ("$159.99", Some(&SupportedCurrency::USD)),
+    let test_values: Vec<(&str, Option<SupportedCurrency>)> = vec![
+        ("CAD250.00", Some(SupportedCurrency::CAD)),
+        ("C$325.00", Some(SupportedCurrency::CAD)),
+        ("350.31€", Some(SupportedCurrency::EUR)),
+        ("$159.99", Some(SupportedCurrency::USD)),
         ("150", None),
-        ("£420.00", Some(&SupportedCurrency::GBP)),
-        ("A$180.00", Some(&SupportedCurrency::AUD)),
-        ("HK$520.00", Some(&SupportedCurrency::HKD)),
+        ("£420.00", Some(SupportedCurrency::GBP)),
+        ("A$180.00", Some(SupportedCurrency::AUD)),
+        ("HK$520.00", Some(SupportedCurrency::HKD)),
     ];
 
     for (test_value, expected_currency) in test_values {

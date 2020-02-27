@@ -3,7 +3,8 @@ use std::error::Error;
 use chrono::Utc;
 use scraper::{ElementRef, Html, Selector};
 
-use crate::currency::{CurrencyGuesser, SupportedCurrency};
+use crate::configuration::Configuration;
+use crate::currency::CurrencyGuesser;
 use crate::database::items::{Item, ItemConditions};
 use crate::database::prices::Price;
 use crate::modules::myfigurecollection::MyFigureCollection;
@@ -70,9 +71,9 @@ impl BaseModule for MyFigureCollection {
                         self.conversion.convert_price_to(
                             converted_price,
                             currency.clone(),
-                            SupportedCurrency::EUR
+                            Configuration::get_used_currency()
                         ),
-                        SupportedCurrency::EUR
+                        Configuration::get_used_currency()
                     );
                 }
             }

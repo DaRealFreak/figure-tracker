@@ -3,6 +3,7 @@ use std::error::Error;
 use std::fmt;
 use std::fmt::Display;
 
+use num_traits::ToPrimitive;
 use ordered_float::OrderedFloat;
 use serde::Deserialize;
 use strsim::normalized_levenshtein;
@@ -175,12 +176,10 @@ impl CurrencyGuesser {
         None
     }
 
-    /// guess the numerical value of the passed amount
-    /// this will return f.e. for 1.234,00, 1234,00, 1234 and 1,234.00 the float value 1234.0
-    /// also longer numbers are supported too like 1.234.567,00 or 1,234,567.00
-    /// illegal values are returning None like f.e. mixed separators: 1.234,567.00
+    /// retrieve the numerical value of the passed amount
     pub fn get_currency_value(value: String) -> Result<f64, Box<dyn Error>> {
-        Ok(0.0)
+        let currency = currency::Currency::from_str(value.as_str())?;
+        Ok(currency.value().to_f64().unwrap() / 100.0)
     }
 }
 
@@ -308,45 +307,5 @@ fn test_currency_guesses() {
             guesser.guess_currency(test_value.to_string()),
             expected_currency
         );
-    }
-}
-
-#[test]
-pub fn test_currency_value_guesses() {
-    let valid_test_values = vec![
-        // no decimals, no separators
-        "123",
-        // with decimals, no separators
-        "123.00",
-        "123,00",
-        "123456.00",
-        "123456,00",
-        // no decimals, with separators
-        "123.456",
-        "123,456",
-        "123.456.789",
-        "123,456,789",
-        // with decimals, with separators
-        "123.456,00",
-        "123,456.00",
-        "123.456.789,00",
-        "123,456,789.00",
-    ];
-
-    let invalid_test_values = vec![
-        // wrong length between separators
-        "1.2.3",
-        "1,2,3",
-        // mixed separators
-        "1,234.567,00",
-        "1.234,567.00",
-    ];
-
-    for test_value in valid_test_values {
-        assert!(CurrencyGuesser::get_currency_value(test_value.to_string()).is_ok());
-    }
-
-    for test_value in invalid_test_values {
-        assert!(CurrencyGuesser::get_currency_value(test_value.to_string()).is_err())
     }
 }

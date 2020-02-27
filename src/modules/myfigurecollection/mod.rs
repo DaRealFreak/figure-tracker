@@ -8,7 +8,6 @@ use scraper::{Html, Selector};
 use crate::currency::CurrencyConversion;
 use crate::database::items::Item;
 use crate::http::get_client;
-use std::collections::BTreeMap;
 
 mod base;
 mod info;
@@ -108,6 +107,8 @@ impl MyFigureCollection {
 
 #[test]
 pub fn test_get_figure_id() {
+    use std::collections::BTreeMap;
+
     let item = &mut Item {
         id: 0,
         jan: 4_571_245_298_836,
@@ -143,6 +144,7 @@ pub fn test_get_figure_id() {
 #[test]
 pub fn test_get_figure_details() {
     use crate::modules::InfoModule;
+    use std::collections::BTreeMap;
 
     let item = &mut Item {
         id: 0,

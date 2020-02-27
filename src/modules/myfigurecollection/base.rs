@@ -8,7 +8,6 @@ use crate::database::items::{Item, ItemConditions};
 use crate::database::prices::Price;
 use crate::modules::myfigurecollection::MyFigureCollection;
 use crate::modules::{BaseModule, Prices};
-use std::collections::BTreeMap;
 
 struct Base<'a> {
     pub(crate) inner: &'a MyFigureCollection,
@@ -65,10 +64,14 @@ impl BaseModule for MyFigureCollection {
             if let Some(currency) = CurrencyGuesser::new().guess_currency(currency) {
                 if let Ok(converted_price) = CurrencyGuesser::get_currency_value(price.clone()) {
                     println!(
-                        "{} {} -> {} {}",
+                        "{} {} -> {:.2} {}",
                         price,
                         currency,
-                        converted_price,
+                        self.conversion.convert_price_to(
+                            converted_price,
+                            currency.clone(),
+                            SupportedCurrency::EUR
+                        ),
                         SupportedCurrency::EUR
                     );
                 }
@@ -99,6 +102,7 @@ impl BaseModule for MyFigureCollection {
 #[test]
 pub fn test_get_lowest_prices() {
     use crate::currency::CurrencyConversion;
+    use std::collections::BTreeMap;
 
     let item = &mut Item {
         id: 0,

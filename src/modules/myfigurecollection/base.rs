@@ -9,17 +9,20 @@ use crate::database::items::{Item, ItemConditions};
 use crate::database::prices::Price;
 use crate::modules::myfigurecollection::MyFigureCollection;
 use crate::modules::{BaseModule, Prices};
+use std::borrow::Borrow;
 
 struct Base<'a> {
     pub(crate) inner: &'a MyFigureCollection,
 }
 
 impl<'a> Base<'a> {
+    /// retrieve all item listing on the current page
     fn get_sales(doc: &Html) -> Vec<ElementRef> {
         let element_selector = Selector::parse("ul.listing li.listing-item").unwrap();
         doc.select(&element_selector).collect()
     }
 
+    /// extract sales from url and navigate through possibly multiple pages
     fn get_sales_from_url(&self, search_url: String) -> Result<Vec<Price>, Box<dyn Error>> {
         let mut sales = vec![];
         let mut res = self.inner.client.get(search_url.as_str()).send()?;
@@ -103,10 +106,11 @@ impl<'a> Base<'a> {
 
     /// retrieve used sales
     /// (MFC doesn't display mint/used difference in sales page, so we have to retrieve the differences ourselves)
-    fn get_used_sales(all_sales: Vec<Price>, new_sales: Vec<Price>) -> Vec<Price> {
+    fn get_used_sales(all_sales: &Vec<Price>, new_sales: &Vec<Price>) -> Vec<Price> {
         let mut sales = vec![];
 
-        'outer: for mut sale in all_sales {
+        'outer: for sale in all_sales {
+            let mut sale = sale.clone();
             // check for identical ad IDs of new sales and continue if found
             for new_sale in new_sales.clone() {
                 if new_sale.url == sale.url {
@@ -159,32 +163,42 @@ impl<'a> Base<'a> {
 }
 
 impl BaseModule for MyFigureCollection {
+    /// retrieve the module key
     fn get_module_key(&self) -> String {
         MyFigureCollection::get_module_key()
     }
 
+    /// retrieve the lowest price for new and used condition
     fn get_lowest_prices(&self, item: &Item) -> Result<Prices, Box<dyn Error>> {
         let figure_id = self.get_figure_id(&item)?;
         let all_sales = Base { inner: self }.get_all_sales(figure_id.clone())?;
         let new_sales = Base { inner: self }.get_new_sales(figure_id)?;
 
-        let used_sales = Base::get_used_sales(all_sales, new_sales);
-        // ToDo: retrieving HTML and parsing results
+        let used_sales = Base::get_used_sales(&all_sales, &new_sales);
 
-        Ok(Prices {
-            new: Option::from(Price {
-                id: None,
-                price: 10.02,
-                currency: "¥".to_string(),
-                converted_price: 0.0,
-                converted_currency: Configuration::get_used_currency().to_string(),
-                url: "".to_string(),
-                module: MyFigureCollection::get_module_key(),
-                condition: ItemConditions::New,
-                timestamp: Utc::now(),
-            }),
+        let mut prices = Prices {
+            new: None,
             used: None,
-        })
+        };
+
+        for new_sale in new_sales {
+            if prices.borrow().new.is_none()
+                || new_sale.converted_price < prices.borrow().new.as_ref().unwrap().converted_price
+            {
+                prices.new = Some(new_sale);
+            }
+        }
+
+        for used_sale in used_sales {
+            if prices.borrow().used.is_none()
+                || used_sale.converted_price
+                    < prices.borrow().used.as_ref().unwrap().converted_price
+            {
+                prices.used = Some(used_sale);
+            }
+        }
+
+        Ok(prices)
     }
 
     fn matches_url(&self, _url: &str) -> bool {

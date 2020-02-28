@@ -2,6 +2,7 @@ use std::error::Error;
 
 use chrono::Utc;
 
+use crate::configuration::Configuration;
 use crate::database::items::{Item, ItemConditions};
 use crate::database::prices::Price;
 use crate::modules::amiami::info::Info;
@@ -19,9 +20,11 @@ impl BaseModule for AmiAmi {
             new: Option::from(Price {
                 id: None,
                 price: 10.02,
+                currency: "¥".to_string(),
+                converted_price: 0.0,
+                converted_currency: Configuration::get_used_currency().to_string(),
                 url: api_response.get_figure_url(),
                 module: self.get_module_key(),
-                currency: "¥".to_string(),
                 condition: ItemConditions::New,
                 timestamp: Utc::now(),
             }),

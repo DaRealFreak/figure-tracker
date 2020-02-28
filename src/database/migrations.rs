@@ -57,14 +57,16 @@ impl Migration for Database {
         self.conn.execute(
             "CREATE TABLE IF NOT EXISTS prices
                 (
-                    id        INTEGER PRIMARY KEY AUTOINCREMENT,
-                    item_id   INTEGER        NOT NULL REFERENCES tracked_items (id),
-                    price     DECIMAL(10, 2) NOT NULL DEFAULT '0',
-                    url       VARCHAR(255)            DEFAULT '',
-                    module    VARCHAR(255)            DEFAULT '',
-                    currency  VARCHAR(255)            DEFAULT '',
-                    condition VARCHAR(255)            DEFAULT '',
-                    tstamp    TIMESTAMP               DEFAULT CURRENT_TIMESTAMP
+                    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+                    item_id             INTEGER        NOT NULL REFERENCES tracked_items (id),
+                    price               DECIMAL(10, 2) NOT NULL DEFAULT '0',
+                    currency            VARCHAR(255)            DEFAULT '',
+                    converted_price     DECIMAL(10, 2) NOT NULL DEFAULT '0',
+                    converted_currency  VARCHAR(255)            DEFAULT '',
+                    url                 VARCHAR(255)            DEFAULT '',
+                    module              VARCHAR(255)            DEFAULT '',
+                    condition           VARCHAR(255)            DEFAULT '',
+                    tstamp              TIMESTAMP               DEFAULT CURRENT_TIMESTAMP
                 )",
             NO_PARAMS,
         )?;

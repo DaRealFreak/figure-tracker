@@ -10,9 +10,11 @@ use crate::database::Database;
 pub(crate) struct Price {
     pub(crate) id: Option<i64>,
     pub(crate) price: f64,
+    pub(crate) currency: String,
+    pub(crate) converted_price: f64,
+    pub(crate) converted_currency: String,
     pub(crate) url: String,
     pub(crate) module: String,
-    pub(crate) currency: String,
     pub(crate) condition: ItemConditions,
     pub(crate) timestamp: DateTime<Utc>,
 }
@@ -26,14 +28,16 @@ pub(crate) trait Prices {
 impl Prices for Database {
     fn add_price(&self, item: &Item, price: &Price) -> Result<(), Box<dyn Error>> {
         self.conn.execute(
-            "INSERT OR IGNORE INTO prices(item_id, price, url, module, currency, condition, tstamp)
-                  VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
+            "INSERT OR IGNORE INTO prices(item_id, price, currency, converted_price, converted_currency, url, module, condition, tstamp)
+                  VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
             params![
                 item.id.to_string(),
                 price.price,
+                price.currency,
+                price.converted_price,
+                price.converted_currency,
                 price.url,
                 price.module,
-                price.currency,
                 price.condition,
                 price.timestamp
             ],

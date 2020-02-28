@@ -35,14 +35,16 @@ impl<'a> Base<'a> {
                     if let Ok(price_value) = CurrencyGuesser::get_currency_value(price.clone()) {
                         sales.push(Price {
                             id: None,
-                            price: self.inner.conversion.convert_price_to(
+                            price: price_value,
+                            currency: currency.to_string(),
+                            converted_price: self.inner.conversion.convert_price_to(
                                 price_value,
                                 currency.clone(),
                                 Configuration::get_used_currency(),
                             ),
+                            converted_currency: Configuration::get_used_currency().to_string(),
                             url: sale_url,
                             module: MyFigureCollection::get_module_key(),
-                            currency: currency.to_string(),
                             condition: ItemConditions::New,
                             timestamp: Utc::now(),
                         });
@@ -173,9 +175,11 @@ impl BaseModule for MyFigureCollection {
             new: Option::from(Price {
                 id: None,
                 price: 10.02,
+                currency: "¥".to_string(),
+                converted_price: 0.0,
+                converted_currency: Configuration::get_used_currency().to_string(),
                 url: "".to_string(),
                 module: MyFigureCollection::get_module_key(),
-                currency: "¥".to_string(),
                 condition: ItemConditions::New,
                 timestamp: Utc::now(),
             }),

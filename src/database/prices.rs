@@ -32,9 +32,9 @@ impl Prices for Database {
                   VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
             params![
                 item.id.to_string(),
-                price.price,
+                format!("{:.2}", price.price),
                 price.currency,
-                price.converted_price,
+                format!("{:.2}", price.converted_price),
                 price.converted_currency,
                 price.url,
                 price.module,

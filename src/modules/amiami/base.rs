@@ -1,10 +1,6 @@
 use std::error::Error;
 
-use chrono::Utc;
-
-use crate::configuration::Configuration;
-use crate::database::items::{Item, ItemConditions};
-use crate::database::prices::Price;
+use crate::database::items::Item;
 use crate::modules::amiami::info::Info;
 use crate::modules::amiami::AmiAmi;
 use crate::modules::{BaseModule, Prices};
@@ -17,17 +13,7 @@ impl BaseModule for AmiAmi {
     fn get_lowest_prices(&self, item: &Item) -> Result<Prices, Box<dyn Error>> {
         let api_response = Info { inner: self }.search(item.jan.to_string())?;
         Ok(Prices {
-            new: Option::from(Price {
-                id: None,
-                price: 10.02,
-                currency: "¥".to_string(),
-                converted_price: 0.0,
-                converted_currency: Configuration::get_used_currency().to_string(),
-                url: api_response.get_figure_url(),
-                module: self.get_module_key(),
-                condition: ItemConditions::New,
-                timestamp: Utc::now(),
-            }),
+            new: None,
             used: None,
         })
     }

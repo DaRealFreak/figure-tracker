@@ -179,8 +179,8 @@ impl FigureTracker {
                             .add_price(&item, &price)
                         {
                             Ok(()) => info!(
-                                "detected price for {:?} from module: {:?}: price {:?} (condition: {:?})",
-                                item.term_en, price.module, price.price, price.condition
+                                "[{}] - detected price for {:?}: price {:.2} {} ({:.2} {}), condition: {:?}",
+                                price.module, item.description, price.price, price.currency, price.converted_price, price.converted_currency, price.condition,
                             ),
                             Err(err) => warn!(
                                 "unable to add price to the database (err: {:?})",

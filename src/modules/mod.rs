@@ -119,7 +119,11 @@ impl ModulePool {
                             collected_prices.push(prices.used.unwrap());
                         }
                     }
-                    Err(err) => warn!("error checking for prices (err: {:?})", err),
+                    Err(err) => warn!(
+                        "[{}] - error checking for prices (err: {:?})",
+                        module.get_module_key(),
+                        err
+                    ),
                 }
 
                 // release the collected prices again

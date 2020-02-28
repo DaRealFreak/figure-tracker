@@ -120,8 +120,9 @@ impl ModulePool {
                         }
                     }
                     Err(err) => warn!(
-                        "[{}] - error checking for prices (err: {:?})",
+                        "[{}] - error checking for prices for {:?} (err: {:?})",
                         module.get_module_key(),
+                        item.description,
                         err
                     ),
                 }

@@ -106,13 +106,13 @@ impl<'a> Base<'a> {
 
     /// retrieve used sales
     /// (MFC doesn't display mint/used difference in sales page, so we have to retrieve the differences ourselves)
-    fn get_used_sales(all_sales: &Vec<Price>, new_sales: &Vec<Price>) -> Vec<Price> {
+    fn get_used_sales(all_sales: &[Price], new_sales: &[Price]) -> Vec<Price> {
         let mut sales = vec![];
 
         'outer: for sale in all_sales {
             let mut sale = sale.clone();
             // check for identical ad IDs of new sales and continue if found
-            for new_sale in new_sales.clone() {
+            for new_sale in new_sales {
                 if new_sale.url == sale.url {
                     continue 'outer;
                 }

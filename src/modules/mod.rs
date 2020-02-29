@@ -150,6 +150,7 @@ impl ModulePool {
         // wait for all threads to finish their work
         barrier.wait();
 
+        #[allow(clippy::redundant_clone)]
         collected_prices.clone().lock().unwrap().to_vec()
     }
 

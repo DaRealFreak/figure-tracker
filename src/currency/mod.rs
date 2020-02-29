@@ -312,30 +312,33 @@ fn test_currency_guesses() {
 
 #[test]
 pub fn test_currency_value_guesses() {
-    let test_values = vec![
+    let test_values: Vec<(&str, f64)> = vec![
         // no decimals, no separators
         ("123", 123.0),
         // with decimals, no separators
         ("123.00", 123.0),
         ("123,00", 123.0),
-        ("123456.00", 123456.0),
-        ("123456,00", 123456.0),
+        ("123456.00", 123_456.0),
+        ("123456,00", 123_456.0),
         // no decimals, with separators
-        ("123.456", 123456.0),
-        ("123,456", 123456.0),
-        ("123.456.789", 123456789.0),
-        ("123,456,789", 123456789.0),
+        ("123.456", 123_456.0),
+        ("123,456", 123_456.0),
+        ("123.456.789", 123_456_789.0),
+        ("123,456,789", 123_456_789.0),
         // with decimals, with separators
-        ("123.456,00", 123456.0),
-        ("123,456.00", 123456.0),
-        ("123.456.789,00", 123456789.0),
-        ("123,456,789.00", 123456789.0),
+        ("123.456,00", 123_456.0),
+        ("123,456.00", 123_456.0),
+        ("123.456.789,00", 123_456_789.0),
+        ("123,456,789.00", 123_456_789.0),
     ];
 
     for (test_value, expected) in test_values {
         assert_eq!(
-            CurrencyGuesser::get_currency_value(test_value.to_string()).unwrap(),
-            expected
+            format!(
+                "{:.2}",
+                CurrencyGuesser::get_currency_value(test_value.to_string()).unwrap()
+            ),
+            format!("{:.2}", expected)
         );
     }
 }

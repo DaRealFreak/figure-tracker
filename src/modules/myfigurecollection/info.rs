@@ -7,12 +7,10 @@ use crate::modules::myfigurecollection::MyFigureCollection;
 use crate::modules::InfoModule;
 
 /// small private struct for the not exposed functionality of the InfoModule implementation
-struct Info<'a> {
-    pub(crate) inner: &'a MyFigureCollection,
-}
+struct Info {}
 
 /// the private part of the InfoModule implementation
-impl Info<'_> {
+impl Info {
     /// retrieve the title of the figure from the HTML document of the detail page
     fn get_figure_title_from_doc(document: &Html) -> String {
         let selector = Selector::parse("h1 > span[itemprop='name']").unwrap();

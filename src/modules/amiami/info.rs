@@ -12,27 +12,27 @@ use crate::modules::InfoModule;
 /// the search response returns from the API of AmiAmi
 #[derive(Deserialize)]
 pub(crate) struct ApiSearchResponse {
-    search_result: ApiSearchResult,
-    items: Vec<ApiItem>,
+    pub(crate) search_result: ApiSearchResult,
+    pub(crate) items: Vec<ApiItem>,
     #[serde(rename = "_embedded")]
-    embedded: ApiEmbedded,
+    pub(crate) embedded: ApiEmbedded,
 }
 
 /// the results contain only the number of the search results
 #[derive(Deserialize)]
 pub(crate) struct ApiSearchResult {
-    total_results: u64,
+    pub(crate) total_results: u64,
 }
 
 /// all relevant information regarding the listed items from the API search response
 #[derive(Deserialize, Clone)]
 pub(crate) struct ApiItem {
-    gcode: String,
-    gname: String,
-    min_price: u64,
-    max_price: u64,
-    maker_name: String,
-    c_price_taxed: u64,
+    pub(crate) gcode: String,
+    pub(crate) gname: String,
+    pub(crate) min_price: u64,
+    pub(crate) maker_name: String,
+    pub(crate) instock_flg: u8,
+    pub(crate) condition_flg: u8,
 }
 
 /// the _embedded part of the ApiSearchResponse, contains mostly metadata
@@ -59,13 +59,12 @@ impl ApiSearchResponse {
         }
         None
     }
+}
 
+impl ApiItem {
     /// retrieve the URL for the item based on the JAN/EAN number
     pub fn get_figure_url(&self) -> String {
-        format!(
-            "https://www.amiami.com/eng/detail/?gcode={}",
-            self.items[0].gcode
-        )
+        format!("https://www.amiami.com/eng/detail/?gcode={}", self.gcode)
     }
 }
 
@@ -113,7 +112,8 @@ impl InfoModule for AmiAmi {
         match api_response.search_result.total_results {
             0 => return Err(Box::try_from("no search results found").unwrap()),
             1 => (),
-            _ => warn!("more than 1 result found for item, extracted information could be wrong"),
+            2 => (),
+            _ => warn!("more than 2 results found for item, extracted information could be wrong"),
         }
 
         item.description = (&api_response.items[0].gname).to_string();

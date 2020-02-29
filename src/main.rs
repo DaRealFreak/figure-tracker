@@ -170,6 +170,11 @@ impl FigureTracker {
         match self.db.as_ref().unwrap().get_items() {
             Ok(items) => {
                 for item in items {
+                    info!(
+                        "updating prices for item: {:?} (JAN {})",
+                        item.description, item.jan
+                    );
+
                     let new_prices = self.module_pool.check_item(item.clone());
                     for price in new_prices {
                         match self

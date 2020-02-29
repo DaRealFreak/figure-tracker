@@ -54,7 +54,7 @@ impl MyFigureCollection {
         let item_selector = Selector::parse("li.listing-item span.item-icon a[href]").unwrap();
 
         match document.select(&item_selector).count() {
-            0 => return Err(Box::try_from("no search results found").unwrap()),
+            0 => return Err(Box::try_from("searched figure couldn't be found").unwrap()),
             1 => (),
             _ => warn!("more than 1 result found for item, extracted information could be wrong"),
         }
@@ -74,7 +74,7 @@ impl MyFigureCollection {
             }
         }
 
-        Err(Box::try_from("no search results found").unwrap())
+        Err(Box::try_from("searched figure couldn't be found").unwrap())
     }
 
     /// retrieve the MFC item ID

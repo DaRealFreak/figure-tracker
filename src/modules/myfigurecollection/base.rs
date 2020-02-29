@@ -1,3 +1,4 @@
+use std::borrow::Borrow;
 use std::error::Error;
 
 use chrono::Utc;
@@ -9,7 +10,6 @@ use crate::database::items::{Item, ItemConditions};
 use crate::database::prices::Price;
 use crate::modules::myfigurecollection::MyFigureCollection;
 use crate::modules::{BaseModule, Prices};
-use std::borrow::Borrow;
 
 struct Base<'a> {
     pub(crate) inner: &'a MyFigureCollection,

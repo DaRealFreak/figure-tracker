@@ -4,7 +4,8 @@ use std::sync::{Arc, Barrier, Mutex};
 
 use threadpool::ThreadPool;
 
-use crate::currency::CurrencyConversion;
+use crate::configuration::Configuration;
+use crate::currency::{CurrencyConversion, CurrencyGuesser};
 use crate::database::items::Item;
 use crate::database::prices::Price;
 use crate::modules::amiami::AmiAmi;
@@ -107,16 +108,27 @@ impl ModulePool {
             let item = item.clone();
             let module = self.modules[i].clone();
             let collected_prices = collected_prices.clone();
+            let conversion = self.conversion.clone();
 
             pool.execute(move || {
                 let mut collected_prices = collected_prices.lock().unwrap();
                 match module.get_lowest_prices(&item) {
                     Ok(prices) => {
-                        if prices.new.is_some() {
-                            collected_prices.push(prices.new.unwrap());
-                        }
-                        if prices.used.is_some() {
-                            collected_prices.push(prices.used.unwrap());
+                        for price_option in vec![prices.new, prices.used] {
+                            if let Some(mut price) = price_option {
+                                if let Some(currency) = CurrencyGuesser::new()
+                                    .guess_currency(price.currency.as_str().to_string())
+                                {
+                                    price.converted_price = conversion.convert_price_to(
+                                        price.price,
+                                        currency,
+                                        Configuration::get_used_currency(),
+                                    );
+                                    price.converted_currency =
+                                        Configuration::get_used_currency().to_string();
+                                }
+                                collected_prices.push(price);
+                            }
                         }
                     }
                     Err(err) => warn!(

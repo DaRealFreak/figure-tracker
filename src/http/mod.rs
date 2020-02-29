@@ -58,5 +58,5 @@ pub fn get_client() -> Result<reqwest::blocking::Client, Box<dyn Error>> {
     }
 
     // return the built client
-    Ok(builder.build()?)
+    Ok(builder.gzip(true).build()?)
 }

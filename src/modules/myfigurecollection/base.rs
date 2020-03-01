@@ -200,10 +200,6 @@ impl BaseModule for MyFigureCollection {
 
         Ok(prices)
     }
-
-    fn matches_url(&self, _url: &str) -> bool {
-        unimplemented!("not implemented yet")
-    }
 }
 
 #[test]

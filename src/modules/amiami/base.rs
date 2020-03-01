@@ -51,8 +51,4 @@ impl BaseModule for AmiAmi {
         }
         Ok(prices)
     }
-
-    fn matches_url(&self, _url: &str) -> bool {
-        unimplemented!("not implemented yet")
-    }
 }

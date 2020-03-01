@@ -10,9 +10,11 @@ use crate::database::items::Item;
 use crate::database::prices::Price;
 use crate::modules::amiami::AmiAmi;
 use crate::modules::myfigurecollection::MyFigureCollection;
+use crate::modules::solarisjapan::SolarisJapan;
 
 pub(crate) mod amiami;
 pub(crate) mod myfigurecollection;
+pub(crate) mod solarisjapan;
 
 /// Prices is a simple struct for prices including an option for new and used conditions
 struct Prices {
@@ -29,7 +31,6 @@ trait Module {
 trait BaseModule: BaseModuleClone {
     fn get_module_key(&self) -> String;
     fn get_lowest_prices(&self, item: &Item) -> Result<Prices, Box<dyn Error>>;
-    fn matches_url(&self, url: &str) -> bool;
 }
 
 /// InfoModule are special modules with the additional functionality to update the item details
@@ -87,6 +88,7 @@ impl ModulePool {
             modules: vec![
                 Box::from(MyFigureCollection::new(conversion.clone())?),
                 Box::from(AmiAmi::new()?),
+                Box::from(SolarisJapan::new()?),
             ],
             info_modules: vec![
                 Box::from(MyFigureCollection::new(conversion.clone())?),

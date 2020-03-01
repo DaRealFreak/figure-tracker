@@ -81,6 +81,10 @@ impl Base {
         }
 
         if !search_response.results.is_empty() {
+            warn!(
+                "[{}] - no exact match could be found, using closest search result",
+                SolarisJapan::get_module_key()
+            );
             return Some(search_response.results[0].items[0].clone());
         }
 

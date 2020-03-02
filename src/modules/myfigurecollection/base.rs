@@ -1,7 +1,6 @@
 use std::borrow::Borrow;
 use std::error::Error;
 
-use chrono::Utc;
 use scraper::{ElementRef, Html, Selector};
 
 use crate::configuration::Configuration;
@@ -25,6 +24,7 @@ impl<'a> Base<'a> {
     /// extract sales from url and navigate through possibly multiple pages
     fn get_sales_from_url(&self, search_url: String) -> Result<Vec<Price>, Box<dyn Error>> {
         let mut sales = vec![];
+        let used_currency = Configuration::get_used_currency();
         let mut res = self.inner.client.get(search_url.as_str()).send()?;
 
         loop {
@@ -36,21 +36,23 @@ impl<'a> Base<'a> {
 
                 if let Some(currency) = CurrencyGuesser::new().guess_currency(currency) {
                     if let Ok(price_value) = CurrencyGuesser::get_currency_value(price.clone()) {
-                        sales.push(Price {
-                            id: None,
-                            price: price_value,
-                            currency: currency.to_string(),
-                            converted_price: self.inner.conversion.convert_price_to(
-                                price_value,
-                                currency.clone(),
-                                Configuration::get_used_currency(),
-                            ),
-                            converted_currency: Configuration::get_used_currency().to_string(),
-                            url: sale_url,
-                            module: MyFigureCollection::get_module_key(),
-                            condition: ItemConditions::New,
-                            timestamp: Utc::now(),
-                        });
+                        let mut price = Price::new(
+                            price_value,
+                            currency.clone(),
+                            sale_url,
+                            MyFigureCollection::get_module_key(),
+                            ItemConditions::New,
+                        );
+                        price.converted_price = self.inner.conversion.convert_price_to(
+                            price.price,
+                            currency.clone(),
+                            used_currency.clone(),
+                        );
+                        price.converted_currency = used_currency.clone().to_string();
+                        price.taxes = Configuration::get_used_tax_rate(currency.clone());
+                        price.shipping = Configuration::get_shipping(currency.clone());
+
+                        sales.push(price);
                     }
                 }
             }
@@ -183,7 +185,8 @@ impl BaseModule for MyFigureCollection {
 
         for new_sale in new_sales {
             if prices.borrow().new.is_none()
-                || new_sale.converted_price < prices.borrow().new.as_ref().unwrap().converted_price
+                || new_sale.get_converted_total()
+                    < prices.borrow().new.as_ref().unwrap().get_converted_total()
             {
                 prices.new = Some(new_sale);
             }
@@ -191,8 +194,8 @@ impl BaseModule for MyFigureCollection {
 
         for used_sale in used_sales {
             if prices.borrow().used.is_none()
-                || used_sale.converted_price
-                    < prices.borrow().used.as_ref().unwrap().converted_price
+                || used_sale.get_converted_total()
+                    < prices.borrow().used.as_ref().unwrap().get_converted_total()
             {
                 prices.used = Some(used_sale);
             }

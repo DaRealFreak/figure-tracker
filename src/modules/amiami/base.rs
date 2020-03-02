@@ -1,7 +1,5 @@
 use std::error::Error;
 
-use chrono::Utc;
-
 use crate::currency::SupportedCurrency;
 use crate::database::items::{Item, ItemConditions};
 use crate::database::prices::Price;
@@ -32,17 +30,13 @@ impl BaseModule for AmiAmi {
                 ItemConditions::Used
             };
 
-            let price = Price {
-                id: None,
-                price: item.min_price as f64,
-                currency: SupportedCurrency::JPY.to_string(),
-                converted_price: 0.0,
-                converted_currency: "".to_string(),
-                url: item.get_figure_url(),
-                module: AmiAmi::get_module_key(),
-                condition: cond,
-                timestamp: Utc::now(),
-            };
+            let price = Price::new(
+                item.min_price as f64,
+                SupportedCurrency::JPY,
+                item.get_figure_url(),
+                AmiAmi::get_module_key(),
+                cond,
+            );
 
             match cond {
                 ItemConditions::New => prices.new = Some(price),

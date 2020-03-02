@@ -103,6 +103,7 @@ impl ModulePool {
     pub fn check_item(&self, item: Item) -> Vec<Price> {
         let collected_prices: Arc<Mutex<Vec<Price>>> = Arc::new(Mutex::new(vec![]));
 
+        let used_currency = Configuration::get_used_currency();
         let pool = ThreadPool::new(self.modules.len());
         let barrier = Arc::new(Barrier::new(self.modules.len() + 1));
 
@@ -112,6 +113,7 @@ impl ModulePool {
             let module = self.modules[i].clone();
             let collected_prices = collected_prices.clone();
             let conversion = self.conversion.clone();
+            let used_currency = used_currency.clone();
 
             pool.execute(move || {
                 let mut collected_prices = collected_prices.lock().unwrap();
@@ -124,11 +126,13 @@ impl ModulePool {
                                 {
                                     price.converted_price = conversion.convert_price_to(
                                         price.price,
-                                        currency,
-                                        Configuration::get_used_currency(),
+                                        currency.clone(),
+                                        used_currency.clone(),
                                     );
-                                    price.converted_currency =
-                                        Configuration::get_used_currency().to_string();
+                                    price.converted_currency = used_currency.to_string();
+                                    price.shipping = Configuration::get_shipping(currency.clone());
+                                    price.taxes =
+                                        Configuration::get_used_tax_rate(currency.clone());
                                 }
                                 collected_prices.push(price);
                             }

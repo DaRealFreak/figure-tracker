@@ -1,6 +1,5 @@
 use std::error::Error;
 
-use chrono::Utc;
 use serde::Deserialize;
 
 use crate::currency::guesser::CurrencyGuesser;
@@ -131,19 +130,14 @@ impl BaseModule for SolarisJapan {
                         continue;
                     }
 
-                    let mut price = Price {
-                        id: None,
-                        price: 0.0,
-                        currency: SupportedCurrency::JPY.to_string(),
-                        converted_price: 0.0,
-                        converted_currency: "".to_string(),
-                        url: search_result.get_url(),
-                        module: SolarisJapan::get_module_key(),
-                        condition: ItemConditions::New,
-                        timestamp: Utc::now(),
-                    };
+                    let mut price = Price::new(
+                        CurrencyGuesser::get_currency_value(variant.price)?,
+                        SupportedCurrency::JPY,
+                        search_result.get_url(),
+                        SolarisJapan::get_module_key(),
+                        ItemConditions::New,
+                    );
 
-                    price.price = CurrencyGuesser::get_currency_value(variant.price)?;
                     match variant.title.as_str() {
                         "Brand New" => {
                             prices.new = Some(price);

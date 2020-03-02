@@ -57,6 +57,11 @@ pub fn get_client() -> Result<reqwest::blocking::Client, Box<dyn Error>> {
         builder = builder.proxy(proxy);
     }
 
+    // set optional user agent
+    if !config["connection"]["user-agent"].is_badvalue() {
+        builder = builder.user_agent(config["connection"]["user-agent"].as_str().unwrap())
+    }
+
     // return the built client
     Ok(builder.gzip(true).build()?)
 }

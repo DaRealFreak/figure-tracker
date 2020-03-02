@@ -11,6 +11,8 @@ conversion:
   shipping:
     JPY: 40
 connection:
+  # option to set the user agent of the requests to the sites
+  user-agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:73.0) Gecko/20100101 Firefox/73.0"
   # option to use a proxy for all connections in case a site is region locked or your IP got banned
   proxy:
     host:

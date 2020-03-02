@@ -43,4 +43,44 @@ impl Configuration {
 
         SupportedCurrency::EUR
     }
+
+    /// retrieve the tax rate to the requested currency
+    pub fn get_used_tax_rate(from: SupportedCurrency) -> f64 {
+        let mut tax_rate = 0.0;
+        if let Ok(conf) = Configuration::get_configuration() {
+            if !conf["conversion"]["taxes"][from.to_string().as_str()].is_badvalue() {
+                match conf["conversion"]["taxes"][from.to_string().as_str()].clone() {
+                    Yaml::Integer(value) => return value as f64,
+                    Yaml::Real(value) => {
+                        if let Ok(value) = CurrencyGuesser::get_currency_value(value) {
+                            tax_rate = value;
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        }
+
+        tax_rate
+    }
+
+    /// retrieve the shipping costs based on the passed currency
+    pub fn get_shipping(from: SupportedCurrency) -> f64 {
+        let mut shipping = 0.0;
+        if let Ok(conf) = Configuration::get_configuration() {
+            if !conf["conversion"]["shipping"][from.to_string().as_str()].is_badvalue() {
+                match conf["conversion"]["shipping"][from.to_string().as_str()].clone() {
+                    Yaml::Integer(value) => return value as f64,
+                    Yaml::Real(value) => {
+                        if let Ok(value) = CurrencyGuesser::get_currency_value(value) {
+                            shipping = value;
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        }
+
+        shipping
+    }
 }

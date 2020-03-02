@@ -38,7 +38,7 @@ pub(crate) struct ApiItem {
 /// the _embedded part of the ApiSearchResponse, contains mostly metadata
 #[derive(Deserialize)]
 pub(crate) struct ApiEmbedded {
-    character_names: Vec<ApiCharacterName>,
+    character_names: Option<Vec<ApiCharacterName>>,
 }
 
 /// there character names contain an ID and a name
@@ -119,8 +119,10 @@ impl InfoModule for AmiAmi {
         item.description = (&api_response.items[0].gname).to_string();
 
         let mut terms: Vec<String> = vec![];
-        for character in api_response.embedded.character_names.iter() {
-            terms.push(character.clone().name);
+        if let Some(character_names) = &api_response.embedded.character_names {
+            for character in character_names.iter() {
+                terms.push(character.clone().name);
+            }
         }
 
         terms.push((&api_response.items[0].maker_name).to_string());

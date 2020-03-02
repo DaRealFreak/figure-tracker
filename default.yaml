@@ -7,11 +7,24 @@ conversion:
   # tax percentage which applies to the import (found value + shipping) * (1 + taxes), key is the currency code after ISO 4217
   taxes:
     # f.e. 0.19 for 19% taxes
+    # the empty currencies are all currently found currencies in the sites we support
     JPY:
+    USD:
+    EUR:
+    HKD:
+    AUD:
+    CAD:
+    GBP:
   # flat value added to the value before applying taxes, key is once again the currency code after ISO 4217
   shipping:
     # f.e. 40 for 40€ averaging shipping costs
-    JPY: 40
+    JPY:
+    USD:
+    EUR:
+    HKD:
+    AUD:
+    CAD:
+    GBP:
 connection:
   # option to set the user agent of the requests to the sites
   user-agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:73.0) Gecko/20100101 Firefox/73.0"

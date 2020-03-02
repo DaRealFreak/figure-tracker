@@ -41,7 +41,7 @@ struct SearchMatch {
 
 impl ApiSearchItem {
     pub fn get_url(&self) -> String {
-        format!("https://json.solarisjapan.com/products/{}", self.handle)
+        format!("https://solarisjapan.com/products/{}", self.handle)
     }
 
     pub fn get_info(&self, client: reqwest::blocking::Client) -> Result<ApiInfo, Box<dyn Error>> {

@@ -5,7 +5,8 @@ use std::sync::{Arc, Barrier, Mutex};
 use threadpool::ThreadPool;
 
 use crate::configuration::Configuration;
-use crate::currency::{CurrencyConversion, CurrencyGuesser};
+use crate::currency::conversion::CurrencyConversion;
+use crate::currency::guesser::CurrencyGuesser;
 use crate::database::items::Item;
 use crate::database::prices::Price;
 use crate::modules::amiami::AmiAmi;

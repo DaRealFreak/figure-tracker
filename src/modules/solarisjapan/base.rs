@@ -3,7 +3,8 @@ use std::error::Error;
 use chrono::Utc;
 use serde::Deserialize;
 
-use crate::currency::{CurrencyGuesser, SupportedCurrency};
+use crate::currency::guesser::CurrencyGuesser;
+use crate::currency::SupportedCurrency;
 use crate::database::items::{Item, ItemConditions};
 use crate::database::prices::Price;
 use crate::modules::solarisjapan::SolarisJapan;

@@ -5,7 +5,7 @@ use chrono::Utc;
 use scraper::{ElementRef, Html, Selector};
 
 use crate::configuration::Configuration;
-use crate::currency::CurrencyGuesser;
+use crate::currency::guesser::CurrencyGuesser;
 use crate::database::items::{Item, ItemConditions};
 use crate::database::prices::Price;
 use crate::modules::myfigurecollection::MyFigureCollection;
@@ -204,7 +204,7 @@ impl BaseModule for MyFigureCollection {
 
 #[test]
 pub fn test_get_lowest_prices() {
-    use crate::currency::CurrencyConversion;
+    use crate::currency::conversion::CurrencyConversion;
     use std::collections::BTreeMap;
 
     let item = &mut Item {

@@ -7,7 +7,8 @@ use clap::Clap;
 use yaml_rust::{Yaml, YamlLoader};
 
 use crate::cli::FigureTrackerOptions;
-use crate::currency::{CurrencyGuesser, SupportedCurrency};
+use crate::currency::guesser::CurrencyGuesser;
+use crate::currency::SupportedCurrency;
 
 pub(crate) struct Configuration {}
 

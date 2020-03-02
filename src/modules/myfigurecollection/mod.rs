@@ -5,7 +5,7 @@ use std::str::FromStr;
 use regex::Regex;
 use scraper::{Html, Selector};
 
-use crate::currency::CurrencyConversion;
+use crate::currency::conversion::CurrencyConversion;
 use crate::database::items::Item;
 use crate::http::get_client;
 

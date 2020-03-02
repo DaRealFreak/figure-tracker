@@ -63,6 +63,8 @@ impl Migration for Database {
                     currency            VARCHAR(255)            DEFAULT '',
                     converted_price     DECIMAL(10, 2) NOT NULL DEFAULT '0',
                     converted_currency  VARCHAR(255)            DEFAULT '',
+                    taxes               DECIMAL(10, 2) NOT NULL DEFAULT '0',
+                    shipping            DECIMAL(10, 2) NOT NULL DEFAULT '0',
                     url                 VARCHAR(255)            DEFAULT '',
                     module              VARCHAR(255)            DEFAULT '',
                     condition           VARCHAR(255)            DEFAULT '',

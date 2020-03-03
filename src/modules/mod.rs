@@ -9,10 +9,12 @@ use crate::currency::conversion::CurrencyConversion;
 use crate::currency::guesser::CurrencyGuesser;
 use crate::database::items::Item;
 use crate::database::prices::Price;
+use crate::modules::amazon::AmazonCoJp;
 use crate::modules::amiami::AmiAmi;
 use crate::modules::myfigurecollection::MyFigureCollection;
 use crate::modules::solarisjapan::SolarisJapan;
 
+pub(crate) mod amazon;
 pub(crate) mod amiami;
 pub(crate) mod myfigurecollection;
 pub(crate) mod solarisjapan;
@@ -90,6 +92,7 @@ impl ModulePool {
                 Box::from(MyFigureCollection::new(conversion.clone())?),
                 Box::from(AmiAmi::new()?),
                 Box::from(SolarisJapan::new()?),
+                Box::from(AmazonCoJp::new()?),
             ],
             info_modules: vec![
                 Box::from(MyFigureCollection::new(conversion.clone())?),

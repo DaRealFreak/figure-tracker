@@ -68,11 +68,16 @@ impl<'a> Base<'a> {
             if let Ok(next_page_url) =
                 doc.select_first("nav.listing-count-pages > a.nav-next[href]")
             {
-                res = self
-                    .inner
-                    .client
-                    .get(next_page_url.text_contents().as_str())
-                    .send()?;
+                let next_page_url = next_page_url
+                    .as_node()
+                    .as_element()
+                    .unwrap()
+                    .attributes
+                    .borrow()
+                    .get("href")
+                    .unwrap()
+                    .to_string();
+                res = self.inner.client.get(next_page_url.as_str()).send()?;
             } else {
                 break;
             }

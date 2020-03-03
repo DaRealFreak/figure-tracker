@@ -1,14 +1,39 @@
 use std::error::Error;
 
 use kuchiki::traits::TendrilSink;
+use regex::Regex;
 
 use crate::database::items::Item;
+use crate::database::prices::Price;
 use crate::modules::amazon::AmazonCoJp;
 use crate::modules::{BaseModule, Prices};
 
-struct Base {}
+struct Base<'a> {
+    pub(crate) client: &'a reqwest::blocking::Client,
+}
 
-impl Base {}
+impl<'a> Base<'a> {
+    fn get_lowest_new_price(&self, asin: &'a str) -> Result<Option<Price>, Box<dyn Error>> {
+        let search_url = format!(
+            "https://neokyo.com/amazon-marketplace-listing\
+            ?provider=amazonJapan&asin={}&item_title=&new=true",
+            asin
+        );
+        println!("checking url for new prices: {}", search_url);
+        Ok(None)
+    }
+
+    fn get_lowest_used_price(&self, asin: &'a str) -> Result<Option<Price>, Box<dyn Error>> {
+        let search_url = format!(
+            "https://neokyo.com/amazon-marketplace-listing\
+            ?provider=amazonJapan\
+            &asin={}&item_title=&used=true&as_new=true&very_good=true&good=true&acceptable=true",
+            asin
+        );
+        println!("checking url for used prices: {}", search_url);
+        Ok(None)
+    }
+}
 
 impl BaseModule for AmazonCoJp {
     /// retrieve the module key
@@ -28,6 +53,9 @@ impl BaseModule for AmazonCoJp {
             new: None,
         };
 
+        let base = Base {
+            client: &self.client,
+        };
         let res = self.client.get(search_url.as_str()).send()?;
         let doc = kuchiki::parse_html().one(res.text()?.as_str());
 
@@ -37,14 +65,14 @@ impl BaseModule for AmazonCoJp {
         {
             if let Some(element) = css_match.as_node().as_element() {
                 if let Some(detail_link) = element.attributes.borrow().get("href") {
-                    println!("{}", detail_link)
-                    // https://neokyo.com/product/amazonJapan/B08546259D?search_phrase=4589607790737
-                    // retrieve asin from URL                 ^^^^^^^^^^
-                    // and check offers from:
-                    // https://neokyo.com/amazon-marketplace-listing?provider=amazonJapan&asin=B07DY6BV2C&item_title=&used=true&as_new=true&very_good=true&good=true&acceptable=true
-                    // for used and
-                    // https://neokyo.com/amazon-marketplace-listing?provider=amazonJapan&asin=B07DY6BV2C&item_title=&new=true
-                    // for new item matches
+                    let asin_regex = Regex::new(r"/(?P<asin>[^/]*)\?")?;
+
+                    if asin_regex.is_match(detail_link) {
+                        if let Some(asin) = asin_regex.captures(detail_link).unwrap().name("asin") {
+                            prices.new = base.get_lowest_new_price(asin.as_str())?;
+                            prices.used = base.get_lowest_used_price(asin.as_str())?;
+                        }
+                    }
                 }
             }
         }

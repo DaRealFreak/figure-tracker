@@ -1,7 +1,7 @@
 use std::borrow::Borrow;
 use std::error::Error;
 
-use scraper::{ElementRef, Html, Selector};
+use kuchiki::traits::TendrilSink;
 
 use crate::configuration::Configuration;
 use crate::currency::guesser::CurrencyGuesser;
@@ -15,12 +15,6 @@ struct Base<'a> {
 }
 
 impl<'a> Base<'a> {
-    /// retrieve all item listing on the current page
-    fn get_sales(doc: &Html) -> Vec<ElementRef> {
-        let element_selector = Selector::parse("ul.listing li.listing-item").unwrap();
-        doc.select(&element_selector).collect()
-    }
-
     /// extract sales from url and navigate through possibly multiple pages
     fn get_sales_from_url(&self, search_url: String) -> Result<Vec<Price>, Box<dyn Error>> {
         let mut sales = vec![];
@@ -28,11 +22,25 @@ impl<'a> Base<'a> {
         let mut res = self.inner.client.get(search_url.as_str()).send()?;
 
         loop {
-            let doc = Html::parse_document(res.text()?.as_str());
-            for element in Base::get_sales(&doc) {
-                let currency = Base::get_sale_currency(&element);
-                let price = Base::get_sale_price(&element);
-                let sale_url = Base::get_sale_url(&element);
+            let doc = kuchiki::parse_html().one(res.text()?.as_str());
+            for element in doc.select("ul.listing li.listing-item").unwrap() {
+                let element_node = element.as_node();
+                let currency = element_node
+                    .select_first("span.classified-price-currency")
+                    .unwrap()
+                    .text_contents();
+                let price = element_node
+                    .select_first("span.classified-price-value")
+                    .unwrap()
+                    .text_contents();
+                let sale_url = element_node
+                    .select_first("a.tbx-tooltip[href*='classified']")
+                    .unwrap()
+                    .attributes
+                    .borrow()
+                    .get("href")
+                    .unwrap()
+                    .to_string();
 
                 if let Some(currency) = CurrencyGuesser::new().guess_currency(currency) {
                     if let Ok(price_value) = CurrencyGuesser::get_currency_value(price.clone()) {
@@ -57,8 +65,14 @@ impl<'a> Base<'a> {
                 }
             }
 
-            if let Some(next_page_url) = Base::has_next_page(&doc) {
-                res = self.inner.client.get(next_page_url.as_str()).send()?;
+            if let Ok(next_page_url) =
+                doc.select_first("nav.listing-count-pages > a.nav-next[href]")
+            {
+                res = self
+                    .inner
+                    .client
+                    .get(next_page_url.text_contents().as_str())
+                    .send()?;
             } else {
                 break;
             }
@@ -87,25 +101,6 @@ impl<'a> Base<'a> {
         self.get_sales_from_url(search_url)
     }
 
-    /// retrieve the next page of the navigation
-    /// if no next page exists it'll return None
-    fn has_next_page(doc: &Html) -> Option<String> {
-        let page_selector = Selector::parse("nav.listing-count-pages > a.nav-next[href]").unwrap();
-        if doc.select(&page_selector).count() == 0 {
-            return None;
-        }
-
-        Some(
-            doc.select(&page_selector)
-                .next()
-                .unwrap()
-                .value()
-                .attr("href")
-                .unwrap()
-                .to_string(),
-        )
-    }
-
     /// retrieve used sales
     /// (MFC doesn't display mint/used difference in sales page, so we have to retrieve the differences ourselves)
     fn get_used_sales(all_sales: &[Price], new_sales: &[Price]) -> Vec<Price> {
@@ -125,42 +120,6 @@ impl<'a> Base<'a> {
         }
 
         sales
-    }
-
-    fn get_sale_price(element: &ElementRef<'a>) -> String {
-        let price_selector = Selector::parse("span.classified-price-value").unwrap();
-        element
-            .select(&price_selector)
-            .next()
-            .unwrap()
-            .text()
-            .next()
-            .unwrap()
-            .to_string()
-    }
-
-    fn get_sale_currency(element: &ElementRef<'a>) -> String {
-        let currency_selector = Selector::parse("span.classified-price-currency").unwrap();
-        element
-            .select(&currency_selector)
-            .next()
-            .unwrap()
-            .text()
-            .next()
-            .unwrap()
-            .to_string()
-    }
-
-    fn get_sale_url(element: &ElementRef<'a>) -> String {
-        let sale_selector = Selector::parse("a.tbx-tooltip[href*='classified']").unwrap();
-        element
-            .select(&sale_selector)
-            .next()
-            .unwrap()
-            .value()
-            .attr("href")
-            .unwrap()
-            .to_string()
     }
 }
 

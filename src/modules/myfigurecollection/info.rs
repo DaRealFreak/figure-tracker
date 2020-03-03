@@ -1,6 +1,7 @@
 use std::error::Error;
 
-use scraper::{Html, Selector};
+use kuchiki::traits::TendrilSink;
+use kuchiki::NodeRef;
 
 use crate::database::items::Item;
 use crate::modules::myfigurecollection::MyFigureCollection;
@@ -12,24 +13,20 @@ struct Info {}
 /// the private part of the InfoModule implementation
 impl Info {
     /// retrieve the title of the figure from the HTML document of the detail page
-    fn get_figure_title_from_doc(document: &Html) -> String {
-        let selector = Selector::parse("h1 > span[itemprop='name']").unwrap();
-
-        let description_element_ref = document.select(&selector).next().unwrap();
-        description_element_ref
-            .value()
-            .attr("title")
+    fn get_figure_title_from_doc(doc: &NodeRef) -> String {
+        doc.select_first("h1 > span[itemprop='name']")
             .unwrap()
-            .parse()
+            .attributes
+            .borrow()
+            .get("title")
             .unwrap()
+            .to_string()
     }
 
     /// retrieve the scale of the figure from the HTML document of the detail page
-    fn get_figure_scale_from_doc(document: &Html) -> Result<String, String> {
-        let item_scale_selector = Selector::parse("div.split-right.righter a.item-scale").unwrap();
-        let item_scale_element_ref = document.select(&item_scale_selector).next();
-        if let Some(element) = item_scale_element_ref {
-            Ok(element.text().collect::<Vec<_>>().join(""))
+    fn get_figure_scale_from_doc(doc: &NodeRef) -> Result<String, String> {
+        if let Ok(element) = doc.select_first("div.split-right.righter a.item-scale") {
+            Ok(element.text_contents())
         } else {
             Err("couldn't find the scale attribute".to_string())
         }
@@ -37,44 +34,49 @@ impl Info {
 
     /// retrieve a generic attribute of the figure in the original language
     /// from the HTML document of the detail page
-    fn get_figure_attribute_from_doc_jp(document: &Html, attr: &str) -> Result<String, String> {
-        Info::get_figure_attribute_from_doc(document, attr, true)
+    fn get_figure_attribute_from_doc_jp(doc: &NodeRef, attr: &str) -> Result<String, String> {
+        Info::get_figure_attribute_from_doc(doc, attr, true)
     }
 
     /// retrieve a generic attribute of the figure in the translated into the english language
     /// from the HTML document of the detail page
-    fn get_figure_attribute_from_doc_en(document: &Html, attr: &str) -> Result<String, String> {
-        Info::get_figure_attribute_from_doc(document, attr, false)
+    fn get_figure_attribute_from_doc_en(doc: &NodeRef, attr: &str) -> Result<String, String> {
+        Info::get_figure_attribute_from_doc(doc, attr, false)
     }
 
     /// retrieve a generic attribute of the figure from the HTML document of the detail page
     fn get_figure_attribute_from_doc(
-        document: &Html,
+        doc: &NodeRef,
         attr: &str,
         use_original: bool,
     ) -> Result<String, String> {
-        let selector = Selector::parse("div.split-right.righter div.form-field").unwrap();
-        for element in document.select(&selector) {
-            let label_selector = Selector::parse("div.form-label").unwrap();
-            let value_selector = Selector::parse("a[href] > span").unwrap();
-            let label = element
-                .select(&label_selector)
-                .next()
+        for element in doc
+            .select("div.split-right.righter div.form-field")
+            .unwrap()
+        {
+            let element_node = element.as_node();
+            let label = element_node
+                .select_first("div.form-label")
                 .unwrap()
-                .text()
-                .next()
-                .unwrap()
+                .text_contents()
                 .to_lowercase();
             if label == attr {
-                let value = element.select(&value_selector).next();
-                if value == None {
+                let value = element_node.select_first("a[href] > span");
+                if value.is_err() {
                     return Ok("".to_string());
                 }
 
                 if use_original {
-                    return Ok(value.unwrap().value().attr("switch").unwrap().to_string());
+                    return Ok(value
+                        .unwrap()
+                        .attributes
+                        .borrow()
+                        .get("switch")
+                        .unwrap()
+                        .to_string());
                 }
-                return Ok(value.unwrap().text().next().unwrap().to_string());
+
+                return Ok(value.unwrap().text_contents());
             }
         }
 
@@ -97,27 +99,27 @@ impl InfoModule for MyFigureCollection {
             .get(self.get_figure_url(&item)?.as_str())
             .send()?;
 
-        let document = Html::parse_document(&res.text()?);
+        let doc = kuchiki::parse_html().one(res.text()?.as_str());
 
         let mut terms_en: Vec<String> = vec![];
         let mut terms_jp: Vec<String> = vec![];
 
         for key in vec!["character", "company"].iter() {
-            if let Ok(attr) = Info::get_figure_attribute_from_doc_en(&document, *key) {
+            if let Ok(attr) = Info::get_figure_attribute_from_doc_en(&doc, *key) {
                 terms_en.push(attr);
             }
 
-            if let Ok(attr) = Info::get_figure_attribute_from_doc_jp(&document, *key) {
+            if let Ok(attr) = Info::get_figure_attribute_from_doc_jp(&doc, *key) {
                 terms_jp.push(attr);
             }
         }
 
-        if let Ok(scale) = Info::get_figure_scale_from_doc(&document) {
+        if let Ok(scale) = Info::get_figure_scale_from_doc(&doc) {
             terms_en.push(scale.clone());
             terms_jp.push(scale);
         }
 
-        item.description = Info::get_figure_title_from_doc(&document);
+        item.description = Info::get_figure_title_from_doc(&doc);
         item.term_en = terms_en.join(" ");
         item.term_jp = terms_jp.join(" ");
 

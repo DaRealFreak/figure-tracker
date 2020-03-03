@@ -2,8 +2,9 @@ use std::convert::TryFrom;
 use std::error::Error;
 use std::str::FromStr;
 
+use kuchiki::traits::TendrilSink;
+use kuchiki::NodeRef;
 use regex::Regex;
-use scraper::{Html, Selector};
 
 use crate::currency::conversion::CurrencyConversion;
 use crate::database::items::Item;
@@ -50,27 +51,29 @@ impl MyFigureCollection {
     /// handle search response of the barcode search
     /// figures with multiple matches will also warn about search results
     /// figures with multiple releases and no additional results will function normally
-    fn get_figure_id_search_response(document: &Html) -> Result<u32, Box<dyn Error>> {
-        let item_selector = Selector::parse("li.listing-item span.item-icon a[href]").unwrap();
-
-        match document.select(&item_selector).count() {
+    fn get_figure_id_search_response(document: &NodeRef) -> Result<u32, Box<dyn Error>> {
+        match document
+            .select("li.listing-item span.item-icon a[href]")
+            .iter()
+            .count()
+        {
             0 => return Err(Box::try_from("searched figure couldn't be found").unwrap()),
             1 => (),
             _ => warn!("more than 1 result found for item, extracted information could be wrong"),
         }
 
-        if let Some(test) = document.select(&item_selector).next() {
-            let rel_link = test.value().attr("href").unwrap();
-
-            let rel_figure_regex = Regex::new(r"/item/(?P<item_id>\d+).*$")?;
-            if rel_figure_regex.is_match(rel_link) {
-                return Ok(rel_figure_regex
-                    .captures(rel_link)
-                    .and_then(|cap| {
-                        cap.name("item_id")
-                            .map(|item_id| u32::from_str(item_id.as_str()).unwrap())
-                    })
-                    .unwrap());
+        if let Ok(link_element) = document.select_first("li.listing-item span.item-icon a[href]") {
+            if let Some(rel_link) = link_element.attributes.borrow().get("href") {
+                let rel_figure_regex = Regex::new(r"/item/(?P<item_id>\d+).*$")?;
+                if rel_figure_regex.is_match(rel_link) {
+                    return Ok(rel_figure_regex
+                        .captures(rel_link)
+                        .and_then(|cap| {
+                            cap.name("item_id")
+                                .map(|item_id| u32::from_str(item_id.as_str()).unwrap())
+                        })
+                        .unwrap());
+                }
             }
         }
 
@@ -91,8 +94,8 @@ impl MyFigureCollection {
         let res_url = res.url().as_str().to_string();
 
         if !figure_id_regex.is_match(res_url.as_str()) {
-            let document = Html::parse_document(&res.text()?.as_str());
-            return MyFigureCollection::get_figure_id_search_response(&document);
+            let doc = kuchiki::parse_html().one(res.text()?.as_str());
+            return MyFigureCollection::get_figure_id_search_response(&doc);
         }
 
         Ok(figure_id_regex

@@ -3,7 +3,9 @@ use std::error::Error;
 use kuchiki::traits::TendrilSink;
 use regex::Regex;
 
-use crate::database::items::Item;
+use crate::currency::guesser::CurrencyGuesser;
+use crate::currency::SupportedCurrency;
+use crate::database::items::{Item, ItemConditions};
 use crate::database::prices::Price;
 use crate::modules::amazon::AmazonCoJp;
 use crate::modules::{BaseModule, Prices};
@@ -13,14 +15,54 @@ struct Base<'a> {
 }
 
 impl<'a> Base<'a> {
+    // don't ask me how but reqwest fools the IntelliJ plugin quite good
+    //noinspection RsUnresolvedReference
+    fn get_lowest_price_from_url(
+        &self,
+        url: String,
+        condition: ItemConditions,
+    ) -> Result<Option<Price>, Box<dyn Error>> {
+        let mut prices = vec![];
+
+        let res = self.client.get(url.as_str()).send()?;
+        let doc = kuchiki::parse_html().one(res.text()?.as_str());
+        for sale in doc
+            .select("section.main-section-product-details div.col-lg-10 div.container")
+            .unwrap()
+        {
+            let sale_node = sale.as_node();
+            let price_text = sale_node
+                .select_first("strong.text-green.price")
+                .unwrap()
+                .text_contents();
+
+            prices.push(Price::new(
+                CurrencyGuesser::get_currency_value(price_text)?,
+                SupportedCurrency::JPY,
+                url.clone(),
+                AmazonCoJp::get_module_key(),
+                condition,
+            ));
+        }
+
+        let mut lowest_price: Option<Price> = None;
+        for price in prices {
+            if lowest_price.is_none() || price.price < lowest_price.clone().unwrap().price {
+                lowest_price = Some(price)
+            }
+        }
+
+        Ok(lowest_price)
+    }
+
     fn get_lowest_new_price(&self, asin: &'a str) -> Result<Option<Price>, Box<dyn Error>> {
         let search_url = format!(
             "https://neokyo.com/amazon-marketplace-listing\
             ?provider=amazonJapan&asin={}&item_title=&new=true",
             asin
         );
-        println!("checking url for new prices: {}", search_url);
-        Ok(None)
+
+        self.get_lowest_price_from_url(search_url, ItemConditions::New)
     }
 
     fn get_lowest_used_price(&self, asin: &'a str) -> Result<Option<Price>, Box<dyn Error>> {
@@ -30,8 +72,8 @@ impl<'a> Base<'a> {
             &asin={}&item_title=&used=true&as_new=true&very_good=true&good=true&acceptable=true",
             asin
         );
-        println!("checking url for used prices: {}", search_url);
-        Ok(None)
+
+        self.get_lowest_price_from_url(search_url, ItemConditions::Used)
     }
 }
 
@@ -59,9 +101,8 @@ impl BaseModule for AmazonCoJp {
         let res = self.client.get(search_url.as_str()).send()?;
         let doc = kuchiki::parse_html().one(res.text()?.as_str());
 
-        for css_match in doc
-            .select("div.product-card a.nippon-cta.btn[href*='neokyo.com/product/']")
-            .unwrap()
+        if let Ok(css_match) =
+            doc.select_first("div.product-card a.nippon-cta.btn[href*='neokyo.com/product/']")
         {
             if let Some(element) = css_match.as_node().as_element() {
                 if let Some(detail_link) = element.attributes.borrow().get("href") {

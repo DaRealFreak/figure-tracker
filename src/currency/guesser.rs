@@ -22,7 +22,10 @@ impl CurrencyGuesser {
             currencies: [
                 (SupportedCurrency::EUR, vec!["€".to_string()]),
                 (SupportedCurrency::USD, vec!["$".to_string()]),
-                (SupportedCurrency::JPY, vec!["¥".to_string()]),
+                (
+                    SupportedCurrency::JPY,
+                    vec!["¥".to_string(), "YEN".to_string()],
+                ),
                 (SupportedCurrency::BGN, vec!["лв".to_string()]),
                 (SupportedCurrency::CZK, vec!["Kč".to_string()]),
                 (SupportedCurrency::DKK, vec!["kr".to_string()]),

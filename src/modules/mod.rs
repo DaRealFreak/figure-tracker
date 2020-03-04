@@ -12,11 +12,13 @@ use crate::database::prices::Price;
 use crate::modules::amazon::AmazonCoJp;
 use crate::modules::amiami::AmiAmi;
 use crate::modules::myfigurecollection::MyFigureCollection;
+use crate::modules::rakuten::Rakuten;
 use crate::modules::solarisjapan::SolarisJapan;
 
 pub(crate) mod amazon;
 pub(crate) mod amiami;
 pub(crate) mod myfigurecollection;
+pub(crate) mod rakuten;
 pub(crate) mod solarisjapan;
 
 /// Prices is a simple struct for prices including an option for new and used conditions
@@ -93,6 +95,7 @@ impl ModulePool {
                 Box::from(AmiAmi::new()?),
                 Box::from(SolarisJapan::new()?),
                 Box::from(AmazonCoJp::new()?),
+                Box::from(Rakuten::new()?),
             ],
             info_modules: vec![
                 Box::from(MyFigureCollection::new(conversion.clone())?),

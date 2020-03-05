@@ -1,5 +1,6 @@
 use std::error::Error;
 
+use reqwest::header::{HeaderMap, ACCEPT_LANGUAGE, USER_AGENT};
 use yaml_rust::Yaml;
 
 use crate::configuration::Configuration;
@@ -57,10 +58,24 @@ pub fn get_client() -> Result<reqwest::blocking::Client, Box<dyn Error>> {
         builder = builder.proxy(proxy);
     }
 
+    let mut header_map = HeaderMap::new();
+
+    // request english language to ensure the returned responses to be in the same language everywhere
+    header_map.insert(ACCEPT_LANGUAGE, "en-US,en;q=0.5".parse().unwrap());
+
     // set optional user agent
     if !config["connection"]["user-agent"].is_badvalue() {
-        builder = builder.user_agent(config["connection"]["user-agent"].as_str().unwrap())
+        header_map.insert(
+            USER_AGENT,
+            config["connection"]["user-agent"]
+                .as_str()
+                .unwrap()
+                .parse()
+                .unwrap(),
+        );
     }
+
+    builder = builder.default_headers(header_map);
 
     // return the built client
     Ok(builder.gzip(true).build()?)

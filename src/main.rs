@@ -17,6 +17,7 @@ use yaml_rust::Yaml;
 
 use crate::cli::*;
 use crate::configuration::Configuration;
+use crate::database::conditions::{Condition, Conditions};
 use crate::database::items::{Item, Items};
 use crate::database::prices::Prices;
 use crate::database::Database;
@@ -72,8 +73,7 @@ impl FigureTracker {
                     self.add_item(item);
                 }
                 AddSubCommand::Notification(notification) => {
-                    println!("{:?}, {:?}", notification.condition, notification.value);
-                    unimplemented!("not implemented yet")
+                    self.add_notification(notification);
                 }
             },
             SubCommand::Update(t) => match &t.subcmd {
@@ -147,6 +147,31 @@ impl FigureTracker {
                     self.update_info(item.borrow_mut());
                 }
                 Err(err) => error!("unable to add item to the database (err: {:?})", err),
+            }
+        });
+    }
+
+    /// adds the requested notification to the database if an item linked to the JAN/EAN is found
+    pub fn add_notification(&self, add_notification: &AddNotification) {
+        add_notification.items.iter().for_each(|jan| {
+            match self.db.as_ref().unwrap().get_item(jan.clone()) {
+                Ok(item) => {
+                    match self.db.as_ref().unwrap().add_condition(Condition::new(
+                        add_notification.condition,
+                        add_notification.value,
+                        item.id,
+                    )) {
+                        Ok(_) => info!(
+                            "successfully added condition for item: {:?}",
+                            item.description
+                        ),
+                        Err(err) => warn!(
+                            "unable to add notification condition to the database (err: {:?}",
+                            err
+                        ),
+                    }
+                }
+                Err(err) => warn!("unable to retrieve item from the database (err: {:?})", err),
             }
         });
     }

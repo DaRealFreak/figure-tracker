@@ -1,5 +1,7 @@
 use clap::Clap;
 
+use crate::conditions::Conditions;
+
 /// This application tracks wished items on multiple seller/auction sites
 /// and notifies the user about new sales/price drops and price averages
 #[derive(Clap, Debug)]
@@ -23,7 +25,7 @@ pub(crate) enum SubCommand {
     Update(Update),
 }
 
-/// Add an account or item to the database
+/// Add an item or notification condition to the database
 #[derive(Clap, Debug)]
 pub(crate) struct Add {
     #[clap(subcommand)]
@@ -34,11 +36,11 @@ pub(crate) struct Add {
 pub(crate) enum AddSubCommand {
     #[clap(name = "item")]
     Item(AddItem),
-    #[clap(name = "account")]
-    Account(AddAccount),
+    #[clap(name = "notification")]
+    Notification(AddNotification),
 }
 
-/// Update prices, items or accounts in to the database
+/// Update prices or items in to the database
 #[derive(Clap, Debug)]
 pub(crate) struct Update {
     #[clap(subcommand)]
@@ -49,8 +51,6 @@ pub(crate) struct Update {
 pub(crate) enum UpdateSubCommand {
     #[clap(name = "item")]
     Item(UpdateItem),
-    #[clap(name = "account")]
-    Account(UpdateAccount),
     #[clap(name = "prices")]
     Prices(UpdatePrices),
 }
@@ -62,27 +62,20 @@ pub(crate) struct AddItem {
     pub(crate) input: Vec<i64>,
 }
 
-/// Add an account to the database
+/// Add a notification condition to the database
 #[derive(Clap, Debug)]
-pub(crate) struct AddAccount {
-    /// username of the account to add
-    #[clap(short = "u", long = "username")]
-    pub(crate) username: String,
-    /// password of the account to add
-    #[clap(short = "p", long = "password")]
-    pub(crate) password: String,
-    /// url of the related site of the account to add
-    #[clap(short = "U", long = "url")]
-    pub(crate) url: String,
+pub(crate) struct AddNotification {
+    /// condition when to notify you about the new price
+    #[clap(short = "c", long = "condition")]
+    pub(crate) condition: Conditions,
+    /// value of the notification condition
+    #[clap(short = "v", long = "value")]
+    pub(crate) value: f64,
 }
 
 /// Update an item manually in the database
 #[derive(Clap, Debug)]
 pub(crate) struct UpdateItem {}
-
-/// Update an account manually in the database
-#[derive(Clap, Debug)]
-pub(crate) struct UpdateAccount {}
 
 /// Update prices from all registered modules
 #[derive(Clap, Debug)]

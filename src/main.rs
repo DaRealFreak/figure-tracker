@@ -23,6 +23,7 @@ use crate::database::Database;
 use crate::modules::ModulePool;
 
 mod cli;
+mod conditions;
 mod configuration;
 mod currency;
 mod database;
@@ -70,17 +71,13 @@ impl FigureTracker {
                 AddSubCommand::Item(item) => {
                     self.add_item(item);
                 }
-                AddSubCommand::Account(account) => {
-                    println!(
-                        "{:?}, {:?}, {:?}",
-                        account.username, account.password, account.url
-                    );
+                AddSubCommand::Notification(notification) => {
+                    println!("{:?}, {:?}", notification.condition, notification.value);
                     unimplemented!("not implemented yet")
                 }
             },
             SubCommand::Update(t) => match &t.subcmd {
                 UpdateSubCommand::Item(_item) => unimplemented!(),
-                UpdateSubCommand::Account(_account) => unimplemented!(),
                 UpdateSubCommand::Prices(_t) => {
                     self.update_prices();
                 }

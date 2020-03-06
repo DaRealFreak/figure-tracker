@@ -3,6 +3,7 @@ use rusqlite::{Connection, Error};
 use crate::database::migrations::Migration;
 
 // expose database modules
+pub(crate) mod conditions;
 pub(crate) mod items;
 pub(crate) mod migrations;
 pub(crate) mod prices;

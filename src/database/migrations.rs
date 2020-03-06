@@ -65,10 +65,10 @@ impl Migration for Database {
             "CREATE TABLE IF NOT EXISTS conditions
                 (
                     id       INTEGER PRIMARY KEY AUTOINCREMENT,
-                    type     VARCHAR(255)     DEFAULT '',
-                    value    VARCHAR(255)     DEFAULT '',
-                    item_id  INTEGER NOT NULL REFERENCES tracked_items (id),
-                    disabled BOOLEAN NOT NULL DEFAULT FALSE
+                    type     VARCHAR(255)            DEFAULT '',
+                    value    DECIMAL(10, 2) NOT NULL DEFAULT '0',
+                    item_id  INTEGER        NOT NULL REFERENCES tracked_items (id),
+                    disabled BOOLEAN        NOT NULL DEFAULT FALSE
                 )",
             NO_PARAMS,
         )?;

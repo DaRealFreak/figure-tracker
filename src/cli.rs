@@ -1,6 +1,6 @@
 use clap::Clap;
 
-use crate::conditions::Conditions;
+use crate::conditions::ConditionType;
 
 /// This application tracks wished items on multiple seller/auction sites
 /// and notifies the user about new sales/price drops and price averages
@@ -58,7 +58,8 @@ pub(crate) enum UpdateSubCommand {
 /// Add an item to the database
 #[derive(Clap, Debug)]
 pub(crate) struct AddItem {
-    /// JAN numbers of the items to add to the tracked items
+    /// JAN/EAN numbers of the items to add to the tracked items
+    #[clap(required = true, min_values = 1)]
     pub(crate) input: Vec<i64>,
 }
 
@@ -78,10 +79,13 @@ possible conditions are:
  - price_drop - notification is a price is <value> percent lower than the previously detected price
  "
     )]
-    pub(crate) condition: Conditions,
+    pub(crate) condition: ConditionType,
     /// value of the notification condition
     #[clap(short = "v", long = "value", required = true)]
     pub(crate) value: f64,
+    /// JAN/EAN numbers of the items to add the notification condition for
+    #[clap(required = true, min_values = 1)]
+    pub(crate) items: Vec<i64>,
 }
 
 /// Update an item manually in the database

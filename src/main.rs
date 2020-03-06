@@ -177,20 +177,8 @@ impl FigureTracker {
 
                     let new_prices = self.module_pool.check_item(item.clone());
                     for price in new_prices {
-                        match self
-                            .db
-                            .as_ref()
-                            .unwrap()
-                            .add_price(&item, &price)
-                        {
-                            Ok(()) => info!(
-                                "[{}] - detected price for {:?}: price: {:.2} {} (without shipping/taxes: {:.2} {} / {:.2} {}), condition: {:?}",
-                                price.module, item.description, price.get_converted_total(), price.converted_currency, price.price, price.currency, price.converted_price, price.converted_currency, price.condition,
-                            ),
-                            Err(err) => warn!(
-                                "unable to add price to the database (err: {:?})",
-                                err
-                            ),
+                        if let Err(err) = self.db.as_ref().unwrap().add_price(&item, &price) {
+                            warn!("unable to add price to the database (err: {:?})", err)
                         }
                     }
                 }

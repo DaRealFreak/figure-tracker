@@ -140,6 +140,11 @@ impl ModulePool {
                                     price.taxes =
                                         Configuration::get_used_tax_rate(currency.clone());
                                 }
+                                info!(
+                                    "[{}] - detected price for {:?}: price: {:.2} {} (without shipping/taxes: {:.2} {} / {:.2} {}), condition: {:?}",
+                                    price.module, item.description, price.get_converted_total(), price.converted_currency, price.price, price.currency, price.converted_price, price.converted_currency, price.condition,
+                                );
+
                                 collected_prices.push(price);
                             }
                         }

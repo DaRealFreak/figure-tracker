@@ -1,7 +1,9 @@
+use core::fmt;
 use std::error::Error;
 
 use rusqlite::types::{FromSql, FromSqlError, FromSqlResult, ToSqlOutput, ValueRef};
 use rusqlite::{params, ToSql};
+use serde::export::Formatter;
 
 use crate::database::Database;
 
@@ -53,6 +55,30 @@ pub(crate) trait Items {
     fn update_item(&self, item: &Item) -> Result<(), Box<dyn Error>>;
 }
 
+struct NoSuchItemFoundError {
+    jan: i64,
+}
+
+impl NoSuchItemFoundError {
+    fn display(&self) -> String {
+        format!("no item found by JAN/EAN: {}", self.jan)
+    }
+}
+
+impl std::fmt::Display for NoSuchItemFoundError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.display())
+    }
+}
+
+impl std::fmt::Debug for NoSuchItemFoundError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.display())
+    }
+}
+
+impl std::error::Error for NoSuchItemFoundError {}
+
 /// Items is the implementation of the Items trait
 impl Items for Database {
     fn get_items(&self) -> Result<Vec<Item>, Box<dyn Error>> {
@@ -100,7 +126,10 @@ impl Items for Database {
             })
         })?;
 
-        Ok(item_iter.next().unwrap()?)
+        match item_iter.next() {
+            Some(item) => Ok(item.unwrap()),
+            None => Err(Box::from(NoSuchItemFoundError { jan })),
+        }
     }
 
     /// adds an item to the database using only the JAN number

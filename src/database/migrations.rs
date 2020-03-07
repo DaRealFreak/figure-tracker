@@ -64,11 +64,12 @@ impl Migration for Database {
         self.conn.execute(
             "CREATE TABLE IF NOT EXISTS conditions
                 (
-                    id       INTEGER PRIMARY KEY AUTOINCREMENT,
-                    type     VARCHAR(255)            DEFAULT '',
-                    value    DECIMAL(10, 2) NOT NULL DEFAULT '0',
-                    item_id  INTEGER        NOT NULL REFERENCES tracked_items (id),
-                    disabled BOOLEAN        NOT NULL DEFAULT FALSE
+                    id        INTEGER PRIMARY KEY AUTOINCREMENT,
+                    item_id   INTEGER        NOT NULL REFERENCES tracked_items (id),
+                    type      VARCHAR(255)            DEFAULT '',
+                    value     DECIMAL(10, 2) NOT NULL DEFAULT '0',
+                    condition VARCHAR(255)            DEFAULT NULL,
+                    disabled  BOOLEAN        NOT NULL DEFAULT FALSE
                 )",
             NO_PARAMS,
         )?;

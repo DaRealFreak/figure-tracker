@@ -157,6 +157,7 @@ impl FigureTracker {
             match self.db.as_ref().unwrap().get_item(jan.clone()) {
                 Ok(item) => {
                     match self.db.as_ref().unwrap().add_condition(Condition::new(
+                        add_notification.condition_type,
                         add_notification.condition,
                         add_notification.value,
                         item.id,

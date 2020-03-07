@@ -200,7 +200,7 @@ impl FigureTracker {
 
                     let new_prices = self.module_pool.check_item(item.clone());
                     for price in new_prices {
-                        if let Err(err) = self.db.as_ref().unwrap().add_price(&item, &price) {
+                        if let Err(err) = self.db.as_ref().unwrap().add_price(&price) {
                             warn!("unable to add price to the database (err: {:?})", err)
                         }
                     }

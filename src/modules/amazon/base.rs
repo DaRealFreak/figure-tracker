@@ -19,6 +19,7 @@ impl<'a> Base<'a> {
     //noinspection RsUnresolvedReference
     fn get_lowest_price_from_url(
         &self,
+        item: Item,
         url: String,
         condition: ItemConditions,
     ) -> Result<Option<Price>, Box<dyn Error>> {
@@ -37,6 +38,7 @@ impl<'a> Base<'a> {
                 .text_contents();
 
             prices.push(Price::new(
+                item.clone(),
                 CurrencyGuesser::get_currency_value(price_text)?,
                 SupportedCurrency::JPY,
                 url.clone(),
@@ -55,25 +57,33 @@ impl<'a> Base<'a> {
         Ok(lowest_price)
     }
 
-    fn get_lowest_new_price(&self, asin: &'a str) -> Result<Option<Price>, Box<dyn Error>> {
+    fn get_lowest_new_price(
+        &self,
+        item: Item,
+        asin: &'a str,
+    ) -> Result<Option<Price>, Box<dyn Error>> {
         let search_url = format!(
             "https://neokyo.com/amazon-marketplace-listing\
-            ?provider=amazonJapan&asin={}&item_title=&new=true",
+             ?provider=amazonJapan&asin={}&item_title=&new=true",
             asin
         );
 
-        self.get_lowest_price_from_url(search_url, ItemConditions::New)
+        self.get_lowest_price_from_url(item, search_url, ItemConditions::New)
     }
 
-    fn get_lowest_used_price(&self, asin: &'a str) -> Result<Option<Price>, Box<dyn Error>> {
+    fn get_lowest_used_price(
+        &self,
+        item: Item,
+        asin: &'a str,
+    ) -> Result<Option<Price>, Box<dyn Error>> {
         let search_url = format!(
             "https://neokyo.com/amazon-marketplace-listing\
-            ?provider=amazonJapan\
-            &asin={}&item_title=&used=true&as_new=true&very_good=true&good=true&acceptable=true",
+             ?provider=amazonJapan\
+             &asin={}&item_title=&used=true&as_new=true&very_good=true&good=true&acceptable=true",
             asin
         );
 
-        self.get_lowest_price_from_url(search_url, ItemConditions::Used)
+        self.get_lowest_price_from_url(item, search_url, ItemConditions::Used)
     }
 }
 
@@ -110,8 +120,9 @@ impl BaseModule for AmazonCoJp {
 
                     if asin_regex.is_match(detail_link) {
                         if let Some(asin) = asin_regex.captures(detail_link).unwrap().name("asin") {
-                            prices.new = base.get_lowest_new_price(asin.as_str())?;
-                            prices.used = base.get_lowest_used_price(asin.as_str())?;
+                            prices.new = base.get_lowest_new_price(item.clone(), asin.as_str())?;
+                            prices.used =
+                                base.get_lowest_used_price(item.clone(), asin.as_str())?;
                         }
                     }
                 }

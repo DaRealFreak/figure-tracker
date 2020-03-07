@@ -16,7 +16,11 @@ struct Base<'a> {
 
 impl<'a> Base<'a> {
     /// extract sales from url and navigate through possibly multiple pages
-    fn get_sales_from_url(&self, search_url: String) -> Result<Vec<Price>, Box<dyn Error>> {
+    fn get_sales_from_url(
+        &self,
+        item: Item,
+        search_url: String,
+    ) -> Result<Vec<Price>, Box<dyn Error>> {
         let mut sales = vec![];
         let used_currency = Configuration::get_used_currency();
         let mut res = self.inner.client.get(search_url.as_str()).send()?;
@@ -45,6 +49,7 @@ impl<'a> Base<'a> {
                 if let Some(currency) = CurrencyGuesser::new().guess_currency(currency) {
                     if let Ok(price_value) = CurrencyGuesser::get_currency_value(price.clone()) {
                         let mut price = Price::new(
+                            item.clone(),
                             price_value,
                             currency.clone(),
                             sale_url,
@@ -87,23 +92,23 @@ impl<'a> Base<'a> {
     }
 
     /// retrieve all sales
-    fn get_all_sales(&self, figure_id: u32) -> Result<Vec<Price>, Box<dyn Error>> {
+    fn get_all_sales(&self, item: Item, figure_id: u32) -> Result<Vec<Price>, Box<dyn Error>> {
         let search_url = format!(
             "https://myfigurecollection.net/classified.php?type=0&itemId={}",
             figure_id
         );
 
-        self.get_sales_from_url(search_url)
+        self.get_sales_from_url(item, search_url)
     }
 
     /// retrieve new sales
-    fn get_new_sales(&self, figure_id: u32) -> Result<Vec<Price>, Box<dyn Error>> {
+    fn get_new_sales(&self, item: Item, figure_id: u32) -> Result<Vec<Price>, Box<dyn Error>> {
         let search_url = format!(
             "https://myfigurecollection.net/classified.php?type=0&itemId={}&isMIB=1",
             figure_id
         );
 
-        self.get_sales_from_url(search_url)
+        self.get_sales_from_url(item, search_url)
     }
 
     /// retrieve used sales
@@ -137,8 +142,8 @@ impl BaseModule for MyFigureCollection {
     /// retrieve the lowest price for new and used condition
     fn get_lowest_prices(&self, item: &Item) -> Result<Prices, Box<dyn Error>> {
         let figure_id = self.get_figure_id(&item)?;
-        let all_sales = Base { inner: self }.get_all_sales(figure_id.clone())?;
-        let new_sales = Base { inner: self }.get_new_sales(figure_id)?;
+        let all_sales = Base { inner: self }.get_all_sales(item.clone(), figure_id.clone())?;
+        let new_sales = Base { inner: self }.get_new_sales(item.clone(), figure_id)?;
 
         let used_sales = Base::get_used_sales(&all_sales, &new_sales);
 

@@ -58,6 +58,7 @@ impl BaseModule for Rakuten {
                 .to_string();
 
             collected_prices.push(Price::new(
+                item.clone(),
                 CurrencyGuesser::get_currency_value(price_text)?,
                 SupportedCurrency::JPY,
                 sale_url,

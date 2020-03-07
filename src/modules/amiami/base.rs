@@ -19,21 +19,22 @@ impl BaseModule for AmiAmi {
         };
 
         let api_response = Info { inner: self }.search(item.jan.to_string())?;
-        for item in api_response.items {
-            if item.instock_flg != 1 {
+        for api_item in api_response.items {
+            if api_item.instock_flg != 1 {
                 continue;
             }
 
-            let cond = if item.condition_flg == 0 {
+            let cond = if api_item.condition_flg == 0 {
                 ItemConditions::New
             } else {
                 ItemConditions::Used
             };
 
             let price = Price::new(
-                item.min_price as f64,
+                item.clone(),
+                api_item.min_price as f64,
                 SupportedCurrency::JPY,
-                item.get_figure_url(),
+                api_item.get_figure_url(),
                 AmiAmi::get_module_key(),
                 cond,
             );

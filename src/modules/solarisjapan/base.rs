@@ -131,6 +131,7 @@ impl BaseModule for SolarisJapan {
                     }
 
                     let mut price = Price::new(
+                        item.clone(),
                         CurrencyGuesser::get_currency_value(variant.price)?,
                         SupportedCurrency::JPY,
                         search_result.get_url(),

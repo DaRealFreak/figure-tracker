@@ -1,6 +1,7 @@
 use clap::Clap;
 
 use crate::conditions::ConditionType;
+use crate::database::items::ItemConditions;
 
 /// This application tracks wished items on multiple seller/auction sites
 /// and notifies the user about new sales/price drops and price averages
@@ -67,19 +68,27 @@ pub(crate) struct AddItem {
 #[derive(Clap, Debug)]
 pub(crate) struct AddNotification {
     #[clap(
-        short = "c",
-        long = "condition",
+        short = "t",
+        long = "type",
         required = true,
-        long_help = r"condition when to notify you about a newly detected price
-possible conditions are:
+        long_help = r"condition type when to notify you about a newly detected price
+possible types are:
  - below_price - notifies you when the converted price is below <value>
  - below_price_taxed - notification when the converted price including the taxes is below <value>
  - below_price_full - notification when the converted price including taxes and shipping is below <value>
  - lowest_price - notification when the price reached it's lowest point since tracking the prices
- - price_drop - notification is a price is <value> percent lower than the previously detected price
- "
+ - price_drop - notification is a price is <value> percent lower than the previously detected price"
     )]
-    pub(crate) condition: ConditionType,
+    pub(crate) condition_type: ConditionType,
+    #[clap(
+        short = "c",
+        long = "condition",
+        long_help = r"option to limit notifications for a specific item condition
+possible conditions are:
+ - new - figure is still unopened in the box
+ - used - figure is used and box got opened already"
+    )]
+    pub(crate) condition: Option<ItemConditions>,
     /// value of the notification condition
     #[clap(short = "v", long = "value", required = true)]
     pub(crate) value: f64,

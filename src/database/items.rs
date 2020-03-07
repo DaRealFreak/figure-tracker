@@ -24,6 +24,34 @@ pub(crate) enum ItemConditions {
     Used,
 }
 
+#[derive(Debug)]
+pub(crate) struct InvalidItemConditionError {
+    msg: String,
+}
+
+impl std::str::FromStr for ItemConditions {
+    type Err = InvalidItemConditionError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "new" => Ok(ItemConditions::New),
+            "used" => Ok(ItemConditions::Used),
+            _ => Err(InvalidItemConditionError {
+                msg: format!(
+                    "{:?} is not a valid condition type, add --help to see the valid options",
+                    s,
+                ),
+            }),
+        }
+    }
+}
+
+impl ToString for InvalidItemConditionError {
+    fn to_string(&self) -> String {
+        self.msg.clone()
+    }
+}
+
 /// implementation for the ToSql trait for the rusqlite dependency
 /// to only allow specific item conditions
 impl ToSql for ItemConditions {

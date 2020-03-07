@@ -4,6 +4,7 @@ use rusqlite::params;
 
 use crate::conditions::ConditionType;
 use crate::database::items::ItemConditions;
+use crate::database::prices::Price;
 use crate::database::Database;
 
 #[derive(Clone)]
@@ -37,6 +38,7 @@ impl Condition {
 /// Conditions implements all related functionality for conditions to interact with the database
 pub(crate) trait Conditions {
     fn add_condition(&self, condition: Condition) -> Result<(), Box<dyn Error>>;
+    fn get_related_conditions(&self, price: Price) -> Result<Option<Condition>, Box<dyn Error>>;
 }
 
 impl Conditions for Database {
@@ -55,5 +57,10 @@ impl Conditions for Database {
         )?;
 
         Ok(())
+    }
+
+    /// retrieve related conditions to the passed price
+    fn get_related_conditions(&self, _price: Price) -> Result<Option<Condition>, Box<dyn Error>> {
+        unimplemented!()
     }
 }

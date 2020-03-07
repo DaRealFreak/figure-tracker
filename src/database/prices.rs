@@ -10,6 +10,7 @@ use crate::database::Database;
 #[derive(Clone)]
 pub(crate) struct Price {
     pub(crate) id: Option<i64>,
+    pub(crate) item_id: i64,
     pub(crate) price: f64,
     pub(crate) currency: String,
     pub(crate) converted_price: f64,
@@ -25,6 +26,7 @@ pub(crate) struct Price {
 impl Price {
     /// retrieve price from only the required attributes
     pub fn new(
+        item: Item,
         price: f64,
         currency: SupportedCurrency,
         url: String,
@@ -33,6 +35,7 @@ impl Price {
     ) -> Self {
         Price {
             id: None,
+            item_id: item.id,
             price,
             currency: currency.to_string(),
             converted_price: 0.0,
@@ -55,19 +58,19 @@ impl Price {
 
 /// Prices implements all related functionality for prices to interact with the database
 pub(crate) trait Prices {
-    fn add_price(&self, item: &Item, price: &Price) -> Result<(), Box<dyn Error>>;
+    fn add_price(&self, price: &Price) -> Result<(), Box<dyn Error>>;
 }
 
 /// Prices is the implementation of the Prices trait
 impl Prices for Database {
-    fn add_price(&self, item: &Item, price: &Price) -> Result<(), Box<dyn Error>> {
+    fn add_price(&self, price: &Price) -> Result<(), Box<dyn Error>> {
         self.conn.execute(
             "INSERT OR IGNORE INTO prices(
                     item_id, price, currency, converted_price, converted_currency, taxes,
                     shipping, url, module, condition, tstamp
                 ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)",
             params![
-                item.id.to_string(),
+                price.item_id,
                 format!("{:.2}", price.price),
                 price.currency,
                 format!("{:.2}", price.converted_price),

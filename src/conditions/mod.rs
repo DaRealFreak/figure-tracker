@@ -1,3 +1,7 @@
+use std::str::FromStr;
+
+use rusqlite::types::{FromSql, FromSqlError, FromSqlResult, ValueRef};
+
 #[derive(Clone, Copy, Debug)]
 pub(crate) enum ConditionType {
     BelowPrice,
@@ -46,6 +50,16 @@ impl std::str::FromStr for ConditionType {
                     s,
                 ),
             }),
+        }
+    }
+}
+
+/// to only allow specific item conditions
+impl FromSql for ConditionType {
+    fn column_result(value: ValueRef<'_>) -> FromSqlResult<Self> {
+        match ConditionType::from_str(value.as_str()?) {
+            Ok(condition_type) => Ok(condition_type),
+            Err(_) => Err(FromSqlError::InvalidType),
         }
     }
 }

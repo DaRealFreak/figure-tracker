@@ -7,7 +7,7 @@ use crate::currency::SupportedCurrency;
 use crate::database::items::{Item, ItemConditions};
 use crate::database::Database;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub(crate) struct Price {
     pub(crate) id: Option<i64>,
     pub(crate) item_id: i64,
@@ -53,6 +53,12 @@ impl Price {
     pub fn get_converted_total(&self) -> f64 {
         // shipping costs are normally also taxed
         (self.converted_price + self.shipping) * (1.0 + self.taxes)
+    }
+
+    /// retrieve the taxed total of the price
+    pub fn get_converted_taxed(&self) -> f64 {
+        // taxed amount without shipping costs
+        self.converted_price * (1.0 + self.taxes)
     }
 }
 

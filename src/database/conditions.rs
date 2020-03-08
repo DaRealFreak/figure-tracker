@@ -3,11 +3,11 @@ use std::error::Error;
 use rusqlite::params;
 
 use crate::conditions::ConditionType;
-use crate::database::items::ItemConditions;
+use crate::database::items::{Item, ItemConditions};
 use crate::database::prices::Price;
 use crate::database::Database;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub(crate) struct Condition {
     pub(crate) id: Option<i64>,
     pub(crate) item_id: i64,
@@ -33,12 +33,25 @@ impl Condition {
             disabled: false,
         }
     }
+
+    pub fn matches(&self, price: Price) -> bool {
+        match self.condition_type {
+            ConditionType::BelowPrice => price.converted_price < self.value,
+            ConditionType::BelowPriceTaxed => price.get_converted_taxed() < self.value,
+            ConditionType::BelowPriceFull => price.get_converted_total() < self.value,
+            // check lowest price for item JAN
+            ConditionType::LowestPrice => true,
+            // rework the timestamp addition since it differs rn for a few seconds
+            // then check for latest price before current price timestamp
+            ConditionType::PriceDrop => true,
+        }
+    }
 }
 
 /// Conditions implements all related functionality for conditions to interact with the database
 pub(crate) trait Conditions {
     fn add_condition(&self, condition: Condition) -> Result<(), Box<dyn Error>>;
-    fn get_related_conditions(&self, price: Price) -> Result<Option<Condition>, Box<dyn Error>>;
+    fn get_related_conditions(&self, item: Item) -> Result<Vec<Condition>, Box<dyn Error>>;
 }
 
 impl Conditions for Database {
@@ -59,8 +72,31 @@ impl Conditions for Database {
         Ok(())
     }
 
-    /// retrieve related conditions to the passed price
-    fn get_related_conditions(&self, _price: Price) -> Result<Option<Condition>, Box<dyn Error>> {
-        unimplemented!()
+    /// retrieve related conditions to the passed item
+    fn get_related_conditions(&self, item: Item) -> Result<Vec<Condition>, Box<dyn Error>> {
+        let mut conditions = vec![];
+
+        let mut stmt = self.conn.prepare(
+            "SELECT id, item_id, type, value, condition, disabled
+            FROM conditions
+            WHERE item_id = ?1",
+        )?;
+
+        let conditions_iter = stmt.query_map(params![item.id], |row| {
+            Ok(Condition {
+                id: row.get(0)?,
+                item_id: row.get(1)?,
+                condition_type: row.get(2)?,
+                value: row.get(3)?,
+                item_condition: row.get(4)?,
+                disabled: row.get(5)?,
+            })
+        })?;
+
+        for condition in conditions_iter {
+            conditions.push(condition.unwrap());
+        }
+
+        Ok(conditions)
     }
 }

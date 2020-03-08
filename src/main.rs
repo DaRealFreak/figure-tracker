@@ -9,7 +9,7 @@ use std::error::Error;
 use std::io::Write;
 use std::process;
 
-use chrono::Local;
+use chrono::{Local, Utc};
 use clap::Clap;
 use env_logger::Builder;
 use log::LevelFilter;
@@ -199,7 +199,9 @@ impl FigureTracker {
                     );
 
                     let new_prices = self.module_pool.check_item(item.clone());
-                    for price in new_prices.clone() {
+                    let current_time = Utc::now();
+                    for mut price in new_prices.clone() {
+                        price.timestamp = current_time.clone();
                         if let Err(err) = self.db.as_ref().unwrap().add_price(&price) {
                             warn!("unable to add price to the database (err: {:?})", err)
                         }

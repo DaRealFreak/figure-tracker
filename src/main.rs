@@ -19,7 +19,7 @@ use crate::cli::*;
 use crate::configuration::Configuration;
 use crate::database::conditions::{Condition, Conditions};
 use crate::database::items::{Item, Items};
-use crate::database::prices::Prices;
+use crate::database::prices::{Price, Prices};
 use crate::database::Database;
 use crate::modules::ModulePool;
 
@@ -199,17 +199,32 @@ impl FigureTracker {
                     );
 
                     let new_prices = self.module_pool.check_item(item.clone());
-                    for price in new_prices {
+                    for price in new_prices.clone() {
                         if let Err(err) = self.db.as_ref().unwrap().add_price(&price) {
                             warn!("unable to add price to the database (err: {:?})", err)
                         }
                     }
+
+                    self.check_conditions(item, new_prices);
                 }
             }
             Err(err) => warn!(
                 "unable to retrieve items from the database (err: {:?})",
                 err
             ),
+        }
+    }
+
+    /// check the found prices with the currently saved notifications
+    pub fn check_conditions(&self, item: Item, prices: Vec<Price>) {
+        if let Ok(related_conditions) = self.db.as_ref().unwrap().get_related_conditions(item) {
+            for condition in related_conditions {
+                for price in prices.clone() {
+                    if condition.matches(price) {
+                        println!("notify about notification match...");
+                    }
+                }
+            }
         }
     }
 }

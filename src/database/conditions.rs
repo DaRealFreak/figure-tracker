@@ -4,7 +4,6 @@ use rusqlite::params;
 
 use crate::conditions::ConditionType;
 use crate::database::items::{Item, ItemConditions};
-use crate::database::prices::Price;
 use crate::database::Database;
 
 #[derive(Clone, Debug)]
@@ -31,19 +30,6 @@ impl Condition {
             item_condition: condition,
             value,
             disabled: false,
-        }
-    }
-
-    pub fn matches(&self, price: Price) -> bool {
-        match self.condition_type {
-            ConditionType::BelowPrice => price.converted_price < self.value,
-            ConditionType::BelowPriceTaxed => price.get_converted_taxed() < self.value,
-            ConditionType::BelowPriceFull => price.get_converted_total() < self.value,
-            // check lowest price for item JAN
-            ConditionType::LowestPrice => true,
-            // rework the timestamp addition since it differs rn for a few seconds
-            // then check for latest price before current price timestamp
-            ConditionType::PriceDrop => true,
         }
     }
 }

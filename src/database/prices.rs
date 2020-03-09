@@ -164,7 +164,7 @@ impl Prices for Database {
             WHERE item_id = ?1
                 AND tstamp < ?2
             GROUP BY item_id, tstamp
-            ORDER BY converted_price
+            ORDER BY tstamp DESC, converted_price
             LIMIT 1",
         )?;
 

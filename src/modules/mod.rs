@@ -28,12 +28,26 @@ struct Prices {
     new: Option<Price>,
 }
 
+/// generic error type to be returned from modules for if the figure couldn't be found
+#[derive(Debug)]
+struct NotFoundError {}
+
+/// implement display trait for NotFoundError
+impl std::fmt::Display for NotFoundError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "searched figure could not be found")
+    }
+}
+
+/// mark as error implementation
+impl Error for NotFoundError {}
+
 /// custom error if no information could be retrieved from any info module
 #[derive(Debug)]
-struct NoInfoFromModuleError {}
+struct NoInfoFromModulesError {}
 
-/// implement display trait for NoInfoFromModuleError
-impl std::fmt::Display for NoInfoFromModuleError {
+/// implement display trait for NoInfoFromModulesError
+impl std::fmt::Display for NoInfoFromModulesError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(
             f,
@@ -43,7 +57,7 @@ impl std::fmt::Display for NoInfoFromModuleError {
 }
 
 /// mark as error implementation
-impl Error for NoInfoFromModuleError {}
+impl Error for NoInfoFromModulesError {}
 
 /// Module contains the public functionality you can use from the module pool
 trait Module {
@@ -210,6 +224,6 @@ impl ModulePool {
             }
         }
 
-        Err(Box::from(NoInfoFromModuleError {}))
+        Err(Box::from(NoInfoFromModulesError {}))
     }
 }

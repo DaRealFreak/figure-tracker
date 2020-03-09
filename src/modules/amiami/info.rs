@@ -1,4 +1,3 @@
-use std::convert::TryFrom;
 use std::error::Error;
 use std::result::Result::Err;
 
@@ -7,7 +6,7 @@ use serde::Deserialize;
 
 use crate::database::items::Item;
 use crate::modules::amiami::AmiAmi;
-use crate::modules::InfoModule;
+use crate::modules::{InfoModule, NotFoundError};
 
 /// the search response returns from the API of AmiAmi
 #[derive(Deserialize)]
@@ -110,7 +109,7 @@ impl InfoModule for AmiAmi {
         let api_response = Info::new(self).search(item.jan.to_string())?;
 
         match api_response.search_result.total_results {
-            0 => return Err(Box::try_from("no search results found").unwrap()),
+            0 => return Err(Box::from(NotFoundError {})),
             1 => (),
             2 => (),
             _ => warn!("more than 2 results found for item, extracted information could be wrong"),

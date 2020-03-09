@@ -1,4 +1,3 @@
-use std::convert::TryFrom;
 use std::error::Error;
 use std::str::FromStr;
 
@@ -9,6 +8,7 @@ use regex::Regex;
 use crate::currency::conversion::CurrencyConversion;
 use crate::database::items::Item;
 use crate::http::get_client;
+use crate::modules::NotFoundError;
 
 mod base;
 mod info;
@@ -57,7 +57,7 @@ impl MyFigureCollection {
             .iter()
             .count()
         {
-            0 => return Err(Box::try_from("searched figure couldn't be found").unwrap()),
+            0 => return Err(Box::from(NotFoundError {})),
             1 => (),
             _ => warn!("more than 1 result found for item, extracted information could be wrong"),
         }
@@ -77,7 +77,7 @@ impl MyFigureCollection {
             }
         }
 
-        Err(Box::try_from("searched figure couldn't be found").unwrap())
+        Err(Box::from(NotFoundError {}))
     }
 
     /// retrieve the MFC item ID

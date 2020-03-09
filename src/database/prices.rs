@@ -193,16 +193,19 @@ impl Prices for Database {
 
     /// check if the passed price matches the passed condition and should notify the user
     /// about the price
+    ///
+    /// depending on the condition type the check changes
+    /// ConditionType::BelowPrice -> below static value of the condition
+    /// ConditionType::BelowPriceTaxed -> below taxed value of the condition
+    /// ConditionType::BelowPriceFull -> below the full value of the condition
+    /// ConditionType::LowestPrice -> retrieve the lowest item so far and check if the current item is x amount below the value
+    /// ConditionType::BelowPrice -> below static value of the condition
+    /// ConditionType::PriceDrop -> retrieve the lowest last item recorded before the current item and check if the price dropped by x percentage compared to it
     fn matches_condition(&self, price: Price, condition: Condition) -> bool {
         match condition.condition_type {
-            /// below static value of the condition
             ConditionType::BelowPrice => price.converted_price < condition.value,
-            /// below taxed value of the condition
             ConditionType::BelowPriceTaxed => price.get_converted_taxed() < condition.value,
-            /// below the full value of the condition
             ConditionType::BelowPriceFull => price.get_converted_total() < condition.value,
-            /// retrieve the lowest item so far
-            /// and check if the current item is x amount below the value
             ConditionType::LowestPrice => {
                 if let Ok(price_option) = self.get_lowest_price_by_item_id(price.item_id) {
                     match price_option {
@@ -215,8 +218,6 @@ impl Prices for Database {
                     false
                 }
             }
-            /// retrieve the lowest item recorded before the current item
-            /// and check if the price dropped by x percentage compared to it
             ConditionType::PriceDrop => {
                 if let Ok(price_option) = self.get_lowest_price_before_price(price.clone()) {
                     match price_option {

@@ -154,7 +154,6 @@ impl ModulePool {
             let used_currency = used_currency.clone();
 
             pool.execute(move || {
-                let mut collected_prices = collected_prices.lock().unwrap();
                 match module.get_lowest_prices(&item) {
                     Ok(prices) => {
                         for price_option in vec![prices.new, prices.used] {
@@ -177,7 +176,10 @@ impl ModulePool {
                                     price.module, item.description, price.get_converted_total(), price.converted_currency, price.price, price.currency, price.converted_price, price.converted_currency, price.condition,
                                 );
 
+                                // push our result into the collected prices and release them again
+                                let mut collected_prices = collected_prices.lock().unwrap();
                                 collected_prices.push(price);
+                                drop(collected_prices);
                             }
                         }
                     }
@@ -188,9 +190,6 @@ impl ModulePool {
                         err
                     ),
                 }
-
-                // release the collected prices again
-                drop(collected_prices);
 
                 // wait for the other threads
                 barrier.wait();

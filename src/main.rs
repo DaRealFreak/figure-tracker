@@ -219,11 +219,22 @@ impl FigureTracker {
 
     /// check the found prices with the currently saved notifications
     pub fn check_conditions(&self, item: Item, prices: Vec<Price>) {
-        if let Ok(related_conditions) = self.db.as_ref().unwrap().get_related_conditions(item) {
-            for condition in related_conditions {
-                for price in prices.clone() {
-                    if condition.matches(price) {
+        for price in prices {
+            if let Ok(related_conditions) = self
+                .db
+                .as_ref()
+                .unwrap()
+                .get_related_conditions(item.clone())
+            {
+                for condition in related_conditions {
+                    if self
+                        .db
+                        .as_ref()
+                        .unwrap()
+                        .matches_condition(price.clone(), condition)
+                    {
                         println!("notify about notification match...");
+                        continue;
                     }
                 }
             }

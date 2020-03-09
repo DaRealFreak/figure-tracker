@@ -3,6 +3,14 @@ database:
 general:
   # your currency code after ISO 4217 (https://en.wikipedia.org/wiki/ISO_4217)
   currency: EUR
+notifications:
+  telegram:
+    active: false
+    # you'll require a telegram bot API key which you can easily create here:
+    # https://core.telegram.org/bots#3-how-do-i-create-a-bot
+    api_key:
+    # you'll also require your telegram user ID so we know who to send the notifications to
+    user_id:
 conversion:
   # tax percentage which applies to the import (found value + shipping) * (1 + taxes), key is the currency code after ISO 4217
   taxes:

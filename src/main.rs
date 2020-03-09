@@ -201,7 +201,7 @@ impl FigureTracker {
                     let new_prices = self.module_pool.check_item(item.clone());
                     let current_time = Utc::now();
                     for mut price in new_prices.clone() {
-                        price.timestamp = current_time.clone();
+                        price.timestamp = current_time;
                         if let Err(err) = self.db.as_ref().unwrap().add_price(&price) {
                             warn!("unable to add price to the database (err: {:?})", err)
                         }

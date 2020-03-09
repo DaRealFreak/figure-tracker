@@ -1,7 +1,8 @@
-use std::convert::TryFrom;
+use core::fmt;
 use std::error::Error;
 use std::sync::{Arc, Barrier, Mutex};
 
+use serde::export::Formatter;
 use threadpool::ThreadPool;
 
 use crate::configuration::Configuration;
@@ -26,6 +27,23 @@ struct Prices {
     used: Option<Price>,
     new: Option<Price>,
 }
+
+/// custom error if no information could be retrieved from any info module
+#[derive(Debug)]
+struct NoInfoFromModuleError {}
+
+/// implement display trait for NoInfoFromModuleError
+impl std::fmt::Display for NoInfoFromModuleError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "unable to retrieve figure information from any module implementation"
+        )
+    }
+}
+
+/// mark as error implementation
+impl Error for NoInfoFromModuleError {}
 
 /// Module contains the public functionality you can use from the module pool
 trait Module {
@@ -192,9 +210,6 @@ impl ModulePool {
             }
         }
 
-        Err(
-            Box::try_from("unable to retrieve figure information from any module implementation")
-                .unwrap(),
-        )
+        Err(Box::from(NoInfoFromModuleError {}))
     }
 }

@@ -76,7 +76,7 @@ possible types are:
  - below_price - notifies you when the converted price is below <value>
  - below_price_taxed - notification when the converted price including the taxes is below <value>
  - below_price_full - notification when the converted price including taxes and shipping is below <value>
- - lowest_price - notification when the price reached it's lowest point since tracking the prices
+ - lowest_price - notification when the price is <value> below it's lowest point since tracking the prices
  - price_drop - notification is a price is <value> percent lower than the previously detected price"
     )]
     pub(crate) condition_type: ConditionType,

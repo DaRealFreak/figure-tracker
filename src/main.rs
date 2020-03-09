@@ -30,6 +30,7 @@ mod currency;
 mod database;
 mod http;
 mod modules;
+mod notifications;
 
 /// Main application for figure tracker
 struct FigureTracker {

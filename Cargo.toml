@@ -31,6 +31,9 @@ features = ["serialize"]
 version = "0.2.11"
 features = ["i128"]
 
+[dependencies.telegram-bot]
+git = 'https://github.com/telegram-rs/telegram-bot'
+
 [dependencies]
 log = "0.4.8"
 env_logger = "0.7.1"
@@ -43,3 +46,4 @@ ordered-float = "1.0.2"
 threadpool = "1.7.1"
 currency = "0.4.0"
 kuchiki = "0.8.0"
+tokio = "0.2.13"

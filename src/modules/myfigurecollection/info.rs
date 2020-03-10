@@ -104,7 +104,7 @@ impl InfoModule for MyFigureCollection {
         let mut terms_en: Vec<String> = vec![];
         let mut terms_jp: Vec<String> = vec![];
 
-        for key in vec!["character", "company"].iter() {
+        for key in vec!["character", "company", "companies"].iter() {
             if let Ok(attr) = Info::get_figure_attribute_from_doc_en(&doc, *key) {
                 terms_en.push(attr);
             }

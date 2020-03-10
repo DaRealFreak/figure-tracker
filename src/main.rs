@@ -7,7 +7,8 @@ extern crate yaml_rust;
 use std::borrow::BorrowMut;
 use std::error::Error;
 use std::io::Write;
-use std::process;
+use std::thread::JoinHandle;
+use std::{process, thread};
 
 use chrono::{Local, Utc};
 use clap::Clap;
@@ -199,6 +200,7 @@ impl FigureTracker {
     pub fn update_prices(&self) {
         match self.db.as_ref().unwrap().get_items() {
             Ok(items) => {
+                let mut notification_handles = vec![];
                 for item in items {
                     info!(
                         "updating prices for item: {:?} (JAN {})",
@@ -214,7 +216,16 @@ impl FigureTracker {
                         }
                     }
 
-                    self.check_conditions(item, new_prices);
+                    for handle in self.check_conditions(item, new_prices) {
+                        notification_handles.push(handle);
+                    }
+                }
+
+                // wait for all notifications before shutting down the application
+                for notification_handle in notification_handles {
+                    notification_handle
+                        .join()
+                        .expect("Couldn't join on the associated thread");
                 }
             }
             Err(err) => warn!(
@@ -225,7 +236,9 @@ impl FigureTracker {
     }
 
     /// check the found prices with the currently saved notifications
-    pub fn check_conditions(&self, item: Item, prices: Vec<Price>) {
+    pub fn check_conditions(&self, item: Item, prices: Vec<Price>) -> Vec<JoinHandle<()>> {
+        let mut handles = vec![];
+
         for price in prices {
             if let Ok(related_conditions) = self
                 .db
@@ -240,20 +253,24 @@ impl FigureTracker {
                         .unwrap()
                         .matches_condition(price.clone(), condition.clone())
                     {
-                        match self
-                            .notifications
-                            .notify(item.clone(), price.clone(), condition)
-                        {
-                            Ok(_) => info!("notified about condition match..."),
-                            Err(err) => {
-                                warn!("couldn't notify about condition match (err: {:?})", err)
+                        let not = self.notifications.clone();
+                        let shared_item = item.clone();
+                        let shared_price = price.clone();
+                        handles.push(thread::spawn(move || {
+                            match not.notify(shared_item, shared_price, condition) {
+                                Ok(_) => info!("notified about condition match..."),
+                                Err(err) => {
+                                    warn!("couldn't notify about condition match (err: {:?})", err)
+                                }
                             }
-                        }
+                        }));
                         continue;
                     }
                 }
             }
         }
+
+        handles
     }
 }
 

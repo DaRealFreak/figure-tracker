@@ -8,6 +8,7 @@ use crate::notifications::telegram::{Telegram, TelegramApiData};
 
 pub(crate) mod telegram;
 
+#[derive(Clone)]
 pub(crate) struct NotificationManager {
     telegram_data: Option<TelegramApiData>,
 }

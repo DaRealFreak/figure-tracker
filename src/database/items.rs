@@ -14,6 +14,7 @@ pub(crate) struct Item {
     pub(crate) term_en: String,
     pub(crate) term_jp: String,
     pub(crate) description: String,
+    pub(crate) image: String,
     pub(crate) disabled: bool,
 }
 
@@ -111,7 +112,7 @@ impl std::error::Error for NoSuchItemFoundError {}
 impl Items for Database {
     fn get_items(&self) -> Result<Vec<Item>, Box<dyn Error>> {
         let mut stmt = self.conn.prepare(
-            "SELECT id, jan, term_en, term_jp, description, disabled
+            "SELECT id, jan, term_en, term_jp, description, image, disabled
              FROM tracked_items
              WHERE disabled = 0",
         )?;
@@ -123,7 +124,8 @@ impl Items for Database {
                 term_en: row.get(2)?,
                 term_jp: row.get(3)?,
                 description: row.get(4)?,
-                disabled: row.get(5)?,
+                image: row.get(5)?,
+                disabled: row.get(6)?,
             })
         })?;
 
@@ -138,7 +140,7 @@ impl Items for Database {
     /// retrieve an item from the database based on their JAN number
     fn get_item(&self, jan: i64) -> Result<Item, Box<dyn Error>> {
         let mut stmt = self.conn.prepare(
-            "SELECT id, jan, term_en, term_jp, description, disabled
+            "SELECT id, jan, term_en, term_jp, description, image, disabled
             FROM tracked_items
             WHERE jan = ?1",
         )?;
@@ -150,7 +152,8 @@ impl Items for Database {
                 term_en: row.get(2)?,
                 term_jp: row.get(3)?,
                 description: row.get(4)?,
-                disabled: row.get(5)?,
+                image: row.get(5)?,
+                disabled: row.get(6)?,
             })
         })?;
 
@@ -175,8 +178,8 @@ impl Items for Database {
     fn update_item(&self, item: &Item) -> Result<(), Box<dyn Error>> {
         let mut stmt = self.conn.prepare(
             "UPDATE tracked_items
-                SET jan = ?1, term_en = ?2, term_jp = ?3, description = ?4, disabled = ?5
-                WHERE id = ?6",
+                SET jan = ?1, term_en = ?2, term_jp = ?3, description = ?4, image = ?5, disabled = ?6
+                WHERE id = ?7",
         )?;
 
         stmt.execute(params![
@@ -184,6 +187,7 @@ impl Items for Database {
             item.term_en,
             item.term_jp,
             item.description,
+            item.image,
             item.disabled,
             item.id,
         ])?;

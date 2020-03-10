@@ -37,6 +37,7 @@ impl Migration for Database {
                     term_en     VARCHAR(255)            DEFAULT '',
                     term_jp     VARCHAR(255)            DEFAULT '',
                     description VARCHAR(255)            DEFAULT '',
+                    image       VARCHAR(255)            DEFAULT '',
                     disabled    BOOLEAN                 DEFAULT FALSE NOT NULL
                 )",
             NO_PARAMS,

@@ -11,7 +11,7 @@ pub(crate) struct Condition {
     pub(crate) id: Option<i64>,
     pub(crate) item_id: i64,
     pub(crate) condition_type: ConditionType,
-    pub(crate) item_condition: Option<ItemConditions>,
+    pub(crate) item_condition: ItemConditions,
     pub(crate) value: f64,
     pub(crate) disabled: bool,
 }
@@ -19,7 +19,7 @@ pub(crate) struct Condition {
 impl Condition {
     pub fn new(
         notification_type: ConditionType,
-        condition: Option<ItemConditions>,
+        condition: ItemConditions,
         value: f64,
         item_id: i64,
     ) -> Self {

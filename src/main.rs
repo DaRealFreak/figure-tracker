@@ -18,10 +18,11 @@ use yaml_rust::Yaml;
 use crate::cli::*;
 use crate::configuration::Configuration;
 use crate::database::conditions::{Condition, Conditions};
-use crate::database::items::{Item, Items};
+use crate::database::items::{Item, ItemConditions, Items};
 use crate::database::prices::{Price, Prices};
 use crate::database::Database;
 use crate::modules::ModulePool;
+use crate::notifications::NotificationManager;
 
 mod cli;
 mod conditions;
@@ -38,6 +39,7 @@ struct FigureTracker {
     module_pool: ModulePool,
     db: Option<Database>,
     config: Option<Yaml>,
+    notifications: NotificationManager,
 }
 
 /// main implementation of the figure tracker
@@ -49,6 +51,7 @@ impl FigureTracker {
             module_pool: ModulePool::new()?,
             db: None,
             config: None,
+            notifications: NotificationManager::new(),
         })
     }
 
@@ -159,7 +162,10 @@ impl FigureTracker {
                 Ok(item) => {
                     match self.db.as_ref().unwrap().add_condition(Condition::new(
                         add_notification.condition_type,
-                        add_notification.condition,
+                        match add_notification.condition {
+                            Some(cond) => cond,
+                            None => ItemConditions::All,
+                        },
                         add_notification.value,
                         item.id,
                     )) {
@@ -232,9 +238,17 @@ impl FigureTracker {
                         .db
                         .as_ref()
                         .unwrap()
-                        .matches_condition(price.clone(), condition)
+                        .matches_condition(price.clone(), condition.clone())
                     {
-                        println!("notify about notification match...");
+                        match self
+                            .notifications
+                            .notify(item.clone(), price.clone(), condition)
+                        {
+                            Ok(_) => info!("notified about condition match..."),
+                            Err(err) => {
+                                warn!("couldn't notify about condition match (err: {:?})", err)
+                            }
+                        }
                         continue;
                     }
                 }

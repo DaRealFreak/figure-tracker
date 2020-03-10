@@ -38,7 +38,7 @@ impl std::str::FromStr for ItemConditions {
         match s {
             "new" => Ok(ItemConditions::New),
             "used" => Ok(ItemConditions::Used),
-            "all" => Ok(ItemConditions::Used),
+            "all" => Ok(ItemConditions::All),
             _ => Err(InvalidItemConditionError {
                 msg: format!(
                     "{:?} is not a valid condition type, add --help to see the valid options",
@@ -74,6 +74,7 @@ impl FromSql for ItemConditions {
         value.as_str().and_then(|s| match s {
             "new" => Ok(ItemConditions::New),
             "used" => Ok(ItemConditions::Used),
+            "all" => Ok(ItemConditions::All),
             _ => Err(FromSqlError::InvalidType),
         })
     }

@@ -73,8 +73,10 @@ impl Notification for Telegram {
              price with shipping and taxes: <b>{:.2} {}</b>\n\
              raw price: <b>{:.2} {}</b>\n\
              \n\
-             notification type: <b>{:?}</b>\n\
              item condition: <b>{:?}</b>\n\
+             \n\
+             notification type: <b>{:?}</b>\n\
+             requested item condition: <b>{:?}</b>\n\
              value: <b>{:.2}</b>\n\
              \n\
              link: {}",
@@ -87,6 +89,7 @@ impl Notification for Telegram {
             price.converted_currency,
             price.price,
             price.currency,
+            price.condition,
             cond.condition_type,
             cond.item_condition,
             cond.value,

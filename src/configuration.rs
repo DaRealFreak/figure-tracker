@@ -83,4 +83,50 @@ impl Configuration {
 
         shipping
     }
+
+    /// retrieve the telegram API key is the telegram notification is active and the api key is set
+    pub fn get_telegram_api_key() -> Option<String> {
+        if let Ok(conf) = Configuration::get_configuration() {
+            if !conf["notifications"]["telegram"]["active"].is_badvalue() {
+                if let Some(active) = conf["notifications"]["telegram"]["active"].as_bool() {
+                    if active
+                        && !conf["notifications"]["telegram"]["api_key"].is_badvalue()
+                        && conf["notifications"]["telegram"]["api_key"]
+                            .as_str()
+                            .is_some()
+                    {
+                        return Some(
+                            conf["notifications"]["telegram"]["api_key"]
+                                .as_str()
+                                .unwrap()
+                                .to_string(),
+                        );
+                    }
+                }
+            }
+        }
+
+        None
+    }
+
+    /// retrieve the user ID of the telegram notification option is telegram notification is active
+    /// and the user ID is set
+    pub fn get_telegram_user_id() -> Option<i64> {
+        if let Ok(conf) = Configuration::get_configuration() {
+            if !conf["notifications"]["telegram"]["active"].is_badvalue() {
+                if let Some(active) = conf["notifications"]["telegram"]["active"].as_bool() {
+                    if active
+                        && !conf["notifications"]["telegram"]["user_id"].is_badvalue()
+                        && conf["notifications"]["telegram"]["user_id"]
+                            .as_i64()
+                            .is_some()
+                    {
+                        return conf["notifications"]["telegram"]["user_id"].as_i64();
+                    }
+                }
+            }
+        }
+
+        None
+    }
 }

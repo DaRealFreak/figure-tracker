@@ -53,6 +53,7 @@ impl Telegram {
             InputFile::from(FileRef::from(image_url)),
         );
         send_image.caption(message);
+        send_image.parse_mode(ParseMode::Html);
 
         Runtime::new()
             .unwrap()

@@ -120,6 +120,10 @@ impl InfoModule for MyFigureCollection {
         }
 
         item.description = Info::get_figure_title_from_doc(&doc);
+        item.image = format!(
+            "https://static.myfigurecollection.net/pics/figure/large/{}.jpg",
+            self.get_figure_id(item)?
+        );
         item.term_en = terms_en.join(" ");
         item.term_jp = terms_jp.join(" ");
 

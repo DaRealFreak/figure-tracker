@@ -28,6 +28,7 @@ pub(crate) struct ApiSearchResult {
 pub(crate) struct ApiItem {
     pub(crate) gcode: String,
     pub(crate) gname: String,
+    pub(crate) thumb_url: String,
     pub(crate) min_price: u64,
     pub(crate) maker_name: String,
     pub(crate) instock_flg: u8,
@@ -116,6 +117,7 @@ impl InfoModule for AmiAmi {
         }
 
         item.description = (&api_response.items[0].gname).to_string();
+        item.image = format!("https://img.amiami.com{}", &api_response.items[0].thumb_url);
 
         let mut terms: Vec<String> = vec![];
         if let Some(character_names) = &api_response.embedded.character_names {

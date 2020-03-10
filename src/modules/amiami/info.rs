@@ -144,6 +144,7 @@ fn test_figure_url() {
         id: 0,
         jan: 6_971_995_420_057,
         description: "".to_string(),
+        image: "".to_string(),
         term_en: "".to_string(),
         term_jp: "".to_string(),
         disabled: false,

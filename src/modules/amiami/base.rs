@@ -42,6 +42,7 @@ impl BaseModule for AmiAmi {
             match cond {
                 ItemConditions::New => prices.new = Some(price),
                 ItemConditions::Used => prices.used = Some(price),
+                _ => {}
             }
         }
         Ok(prices)

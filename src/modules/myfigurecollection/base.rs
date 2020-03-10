@@ -183,6 +183,7 @@ pub fn test_get_lowest_prices() {
         id: 0,
         jan: 4_580_416_940_283,
         description: "".to_string(),
+        image: "".to_string(),
         term_en: "".to_string(),
         term_jp: "".to_string(),
         disabled: false,

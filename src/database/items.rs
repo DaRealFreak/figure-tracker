@@ -23,6 +23,7 @@ pub(crate) struct Item {
 pub(crate) enum ItemConditions {
     New,
     Used,
+    All,
 }
 
 #[derive(Debug)]
@@ -37,6 +38,7 @@ impl std::str::FromStr for ItemConditions {
         match s {
             "new" => Ok(ItemConditions::New),
             "used" => Ok(ItemConditions::Used),
+            "all" => Ok(ItemConditions::Used),
             _ => Err(InvalidItemConditionError {
                 msg: format!(
                     "{:?} is not a valid condition type, add --help to see the valid options",
@@ -60,6 +62,7 @@ impl ToSql for ItemConditions {
         match self {
             ItemConditions::New => Ok(ToSqlOutput::from("new")),
             ItemConditions::Used => Ok(ToSqlOutput::from("used")),
+            ItemConditions::All => Ok(ToSqlOutput::from("all")),
         }
     }
 }

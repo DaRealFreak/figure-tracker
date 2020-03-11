@@ -129,4 +129,49 @@ impl Configuration {
 
         None
     }
+
+    /// retrieve the discord bot token if discord notifications are active and the token is set
+    pub fn get_discord_client_token() -> Option<String> {
+        if let Ok(conf) = Configuration::get_configuration() {
+            if !conf["notifications"]["discord"]["active"].is_badvalue() {
+                if let Some(active) = conf["notifications"]["discord"]["active"].as_bool() {
+                    if active
+                        && !conf["notifications"]["discord"]["client_token"].is_badvalue()
+                        && conf["notifications"]["discord"]["client_token"]
+                            .as_str()
+                            .is_some()
+                    {
+                        return Some(
+                            conf["notifications"]["discord"]["client_token"]
+                                .as_str()
+                                .unwrap()
+                                .to_string(),
+                        );
+                    }
+                }
+            }
+        }
+
+        None
+    }
+
+    /// retrieve the user ID if discord notifications are active and the user ID is set
+    pub fn get_discord_user_id() -> Option<i64> {
+        if let Ok(conf) = Configuration::get_configuration() {
+            if !conf["notifications"]["discord"]["active"].is_badvalue() {
+                if let Some(active) = conf["notifications"]["discord"]["active"].as_bool() {
+                    if active
+                        && !conf["notifications"]["discord"]["user_id"].is_badvalue()
+                        && conf["notifications"]["discord"]["user_id"]
+                            .as_i64()
+                            .is_some()
+                    {
+                        return conf["notifications"]["discord"]["user_id"].as_i64();
+                    }
+                }
+            }
+        }
+
+        None
+    }
 }

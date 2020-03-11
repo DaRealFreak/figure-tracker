@@ -11,6 +11,12 @@ notifications:
     api_key:
     # you'll also require your telegram user ID so we know who to send the notifications to
     user_id:
+  discord:
+    active: false
+    # you'll require a client token for the discord bot from which you want to send notifications from
+    client_token:
+    # the receiving user of the notifications, make sure you can receive messages from the bot (same server/everyone setting)
+    user_id:
 conversion:
   # tax percentage which applies to the import (found value + shipping) * (1 + taxes), key is the currency code after ISO 4217
   taxes:

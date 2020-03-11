@@ -32,7 +32,7 @@ impl BaseModule for AmiAmi {
 
             let price = Price::new(
                 item.clone(),
-                api_item.min_price as f64,
+                api_item.min_price.unwrap() as f64,
                 SupportedCurrency::JPY,
                 api_item.get_figure_url(),
                 AmiAmi::get_module_key(),

@@ -29,7 +29,7 @@ pub(crate) struct ApiItem {
     pub(crate) gcode: String,
     pub(crate) gname: String,
     pub(crate) thumb_url: String,
-    pub(crate) min_price: u64,
+    pub(crate) min_price: Option<u64>,
     pub(crate) maker_name: String,
     pub(crate) instock_flg: u8,
     pub(crate) condition_flg: u8,

@@ -106,7 +106,7 @@ impl Notification for Discord {
     fn notify(&self, item: Item, price: Price, cond: Condition) -> Result<(), Box<dyn Error>> {
         let msg = format!(
             "met search notification on item:\n\
-             **{:?}**\n\
+             **{}**\n\
              \n\
              price: **{:.2} {}**\n\
              price with taxes: **{:.2} {}**\n\

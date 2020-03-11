@@ -66,7 +66,7 @@ impl Notification for Telegram {
     fn notify(&self, item: Item, price: Price, cond: Condition) -> Result<(), Box<dyn Error>> {
         let msg = format!(
             "met search notification on item:\n\
-             <b>{:?}</b>\n\
+             <b>{}</b>\n\
              \n\
              price: <b>{:.2} {}</b>\n\
              price with taxes: <b>{:.2} {}</b>\n\

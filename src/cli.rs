@@ -9,10 +9,10 @@ use crate::database::items::ItemConditions;
 #[clap(author, about, version)]
 pub(crate) struct FigureTrackerOptions {
     /// Use a custom configuration file.
-    #[clap(short = "c", long = "config", default_value = "tracker.yaml")]
+    #[clap(short = 'c', long = "config", default_value = "tracker.yaml")]
     pub(crate) config: String,
     /// A level of verbosity, and can be used multiple times
-    #[clap(short = "v", long = "verbose", parse(from_occurrences))]
+    #[clap(short = 'v', long = "verbose", parse(from_occurrences))]
     pub(crate) verbose: i32,
     #[clap(subcommand)]
     pub(crate) subcmd: SubCommand,
@@ -68,10 +68,10 @@ pub(crate) struct AddItem {
 #[derive(Clap, Debug)]
 pub(crate) struct AddNotification {
     #[clap(
-        short = "t",
+        short = 't',
         long = "type",
         required = true,
-        long_help = r"condition type when to notify you about a newly detected price
+        about = r"condition type when to notify you about a newly detected price
 possible types are:
  - below_price - notifies you when the converted price is below <value>
  - below_price_taxed - notification when the converted price including the taxes is below <value>
@@ -81,16 +81,16 @@ possible types are:
     )]
     pub(crate) condition_type: ConditionType,
     #[clap(
-        short = "c",
+        short = 'c',
         long = "condition",
-        long_help = r"option to limit notifications for a specific item condition
+        about = r"option to limit notifications for a specific item condition
 possible conditions are:
  - new - figure is still unopened in the box
  - used - figure is used and box got opened already"
     )]
     pub(crate) condition: Option<ItemConditions>,
     /// value of the notification condition
-    #[clap(short = "v", long = "value", required = true)]
+    #[clap(short = 'v', long = "value", required = true)]
     pub(crate) value: f64,
     /// JAN/EAN numbers of the items to add the notification condition for
     #[clap(required = true, min_values = 1)]

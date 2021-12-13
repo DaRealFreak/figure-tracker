@@ -16,9 +16,9 @@ pub(crate) struct InvalidConditionError {
     msg: String,
 }
 
-impl ToString for InvalidConditionError {
-    fn to_string(&self) -> String {
-        self.msg.clone()
+impl std::fmt::Display for InvalidConditionError {
+    fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+        write!(fmt, "{}", self.msg.clone())
     }
 }
 

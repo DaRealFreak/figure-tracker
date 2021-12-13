@@ -3,7 +3,7 @@ use std::error::Error;
 
 use rusqlite::types::{FromSql, FromSqlError, FromSqlResult, ToSqlOutput, ValueRef};
 use rusqlite::{params, ToSql};
-use serde::export::Formatter;
+use std::fmt::Formatter;
 
 use crate::database::Database;
 
@@ -31,6 +31,12 @@ pub(crate) struct InvalidItemConditionError {
     msg: String,
 }
 
+impl std::fmt::Display for InvalidItemConditionError {
+    fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+        write!(fmt, "{}", self.msg.clone())
+    }
+}
+
 impl std::str::FromStr for ItemConditions {
     type Err = InvalidItemConditionError;
 
@@ -46,12 +52,6 @@ impl std::str::FromStr for ItemConditions {
                 ),
             }),
         }
-    }
-}
-
-impl ToString for InvalidItemConditionError {
-    fn to_string(&self) -> String {
-        self.msg.clone()
     }
 }
 

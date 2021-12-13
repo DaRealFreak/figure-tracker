@@ -3,7 +3,7 @@ use std::error::Error;
 
 use chrono::{DateTime, Utc};
 use rusqlite::params;
-use serde::export::Formatter;
+use std::fmt::Formatter;
 
 use crate::conditions::ConditionType;
 use crate::currency::SupportedCurrency;

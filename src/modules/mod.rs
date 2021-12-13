@@ -2,7 +2,7 @@ use core::fmt;
 use std::error::Error;
 use std::sync::{Arc, Barrier, Mutex};
 
-use serde::export::Formatter;
+use std::fmt::Formatter;
 use threadpool::ThreadPool;
 
 use crate::configuration::Configuration;

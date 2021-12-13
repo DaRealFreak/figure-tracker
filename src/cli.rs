@@ -1,24 +1,24 @@
-use clap::Clap;
+use clap::Parser;
 
 use crate::conditions::ConditionType;
 use crate::database::items::ItemConditions;
 
 /// This application tracks wished items on multiple seller/auction sites
 /// and notifies the user about new sales/price drops and price averages
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 #[clap(author, about, version)]
 pub(crate) struct FigureTrackerOptions {
     /// Use a custom configuration file.
-    #[clap(short = "c", long = "config", default_value = "tracker.yaml")]
+    #[clap(short = 'c', long = "config", default_value = "tracker.yaml")]
     pub(crate) config: String,
     /// A level of verbosity, and can be used multiple times
-    #[clap(short = "v", long = "verbose", parse(from_occurrences))]
+    #[clap(short = 'v', long = "verbose", parse(from_occurrences))]
     pub(crate) verbose: i32,
     #[clap(subcommand)]
     pub(crate) subcmd: SubCommand,
 }
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 pub(crate) enum SubCommand {
     #[clap(name = "add")]
     Add(Add),
@@ -27,13 +27,13 @@ pub(crate) enum SubCommand {
 }
 
 /// Add an item or notification condition to the database
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 pub(crate) struct Add {
     #[clap(subcommand)]
     pub(crate) subcmd: AddSubCommand,
 }
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 pub(crate) enum AddSubCommand {
     #[clap(name = "item")]
     Item(AddItem),
@@ -42,13 +42,13 @@ pub(crate) enum AddSubCommand {
 }
 
 /// Update prices or items in to the database
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 pub(crate) struct Update {
     #[clap(subcommand)]
     pub(crate) subcmd: UpdateSubCommand,
 }
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 pub(crate) enum UpdateSubCommand {
     #[clap(name = "item")]
     Item(UpdateItem),
@@ -57,7 +57,7 @@ pub(crate) enum UpdateSubCommand {
 }
 
 /// Add an item to the database
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 pub(crate) struct AddItem {
     /// JAN/EAN numbers of the items to add to the tracked items
     #[clap(required = true, min_values = 1)]
@@ -65,10 +65,10 @@ pub(crate) struct AddItem {
 }
 
 /// Add a notification condition to the database
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 pub(crate) struct AddNotification {
     #[clap(
-        short = "t",
+        short = 't',
         long = "type",
         required = true,
         long_help = r"condition type when to notify you about a newly detected price
@@ -81,7 +81,7 @@ possible types are:
     )]
     pub(crate) condition_type: ConditionType,
     #[clap(
-        short = "c",
+        short = 'c',
         long = "condition",
         long_help = r"option to limit notifications for a specific item condition
 possible conditions are:
@@ -90,7 +90,7 @@ possible conditions are:
     )]
     pub(crate) condition: Option<ItemConditions>,
     /// value of the notification condition
-    #[clap(short = "v", long = "value", required = true)]
+    #[clap(short = 'v', long = "value", required = true)]
     pub(crate) value: f64,
     /// JAN/EAN numbers of the items to add the notification condition for
     #[clap(required = true, min_values = 1)]
@@ -98,9 +98,9 @@ possible conditions are:
 }
 
 /// Update an item manually in the database
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 pub(crate) struct UpdateItem {}
 
 /// Update prices from all registered modules
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 pub(crate) struct UpdatePrices {}

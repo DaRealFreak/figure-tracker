@@ -3,7 +3,7 @@ use std::io;
 use std::io::Write;
 use std::path::Path;
 
-use clap::Clap;
+use clap::Parser;
 use yaml_rust::{Yaml, YamlLoader};
 
 use crate::cli::FigureTrackerOptions;

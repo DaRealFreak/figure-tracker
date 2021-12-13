@@ -11,7 +11,7 @@ use std::thread::JoinHandle;
 use std::{process, thread};
 
 use chrono::{Local, Utc};
-use clap::Clap;
+use clap::Parser;
 use env_logger::Builder;
 use log::LevelFilter;
 use yaml_rust::Yaml;

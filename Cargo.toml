@@ -13,7 +13,7 @@ features = ["bundled", "chrono"]
 [dependencies.clap]
 git = "https://github.com/clap-rs/clap"
 version = "3.0.0-beta.1"
-features = ["yaml"]
+features = ["yaml","derive"]
 
 [dependencies.reqwest]
 version = "0.10.3"

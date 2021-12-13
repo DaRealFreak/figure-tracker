@@ -6,6 +6,7 @@ use crate::database::migrations::Migration;
 pub(crate) mod conditions;
 pub(crate) mod items;
 pub(crate) mod migrations;
+pub(crate) mod notifications;
 pub(crate) mod prices;
 
 /// Database contains the persisting database connection for all database operations

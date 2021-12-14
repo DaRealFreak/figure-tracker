@@ -23,6 +23,7 @@ struct ApiSearchResults {
 
 #[derive(Deserialize, Clone)]
 struct ApiSearchItem {
+    #[serde(rename = "shopify_handle")]
     handle: String,
     #[serde(rename = "_highlightResult")]
     matches: HighlightResult,
@@ -74,6 +75,11 @@ struct Base {}
 
 impl Base {
     fn get_closest_search_result(search_response: ApiSearchResponse) -> Option<ApiSearchItem> {
+        // check length first
+        if search_response.results[0].items.is_empty() {
+            return None;
+        }
+
         for search_result in search_response.results[0].items.iter() {
             if search_result.matches.ean.match_level == "full" {
                 return Some(search_result.clone());
@@ -101,15 +107,15 @@ impl BaseModule for SolarisJapan {
     /// retrieve the lowest price for new and used condition
     fn get_lowest_prices(&self, item: &Item) -> Result<Prices, Box<dyn Error>> {
         let api_url = "https://zzb7273v5r-dsn.algolia.net/1/indexes/*/queries\
-                       ?x-algolia-api-key=159b58d793c7a4ebd5928c6b8c100941\
-                       &x-algolia-application-id=ZZB7273V5R\
-                       &x-algolia-agent=Algolia%20for%20vanilla%20JavaScript%203.10.2";
+            ?x-algolia-api-key=159b58d793c7a4ebd5928c6b8c100941\
+            &x-algolia-application-id=ZZB7273V5R\
+            &x-algolia-agent=Algolia%20for%20vanilla%20JavaScript%203.10.2";
 
         let data = format!("{{
             \"requests\": [
                 {{
-                    \"indexName\": \"ShopifyProduct\",
-                    \"params\": \"query={}&query={}&page=0&facets=%5B%22type%22%2C%22Figure%22%2C%22Linen%22%2C%22Game%22%2C%22Book%22%2C%22stock%22%2C%22Video%22%2C%22Music%22%2C%22Merchandise%22%5D&tagFilters=\"
+                    \"indexName\": \"prod_solagoldex\",
+                    \"params\":\"query={}&query={}&page=0&facets=%5B%22category%22%2C%22type%22%2C%22vendor%22%2C%22named_tags.franchise%22%2C%22named_tags.character%22%5D&tagFilters=\"
                 }}
             ]
         }}", item.jan, item.jan);
@@ -120,7 +126,7 @@ impl BaseModule for SolarisJapan {
         };
 
         let res = self.client.post(api_url).body(data).send()?;
-        let deserialized_data: ApiSearchResponse = serde_json::from_str(&res.text()?).unwrap();
+        let deserialized_data: ApiSearchResponse = serde_json::from_str(&res.text()?)?;
 
         if let Some(search_result) = Base::get_closest_search_result(deserialized_data) {
             if let Ok(info) = search_result.get_info(self.clone().client) {

@@ -63,8 +63,8 @@ impl<'a> Base<'a> {
         asin: &'a str,
     ) -> Result<Option<Price>, Box<dyn Error>> {
         let search_url = format!(
-            "https://neokyo.com/amazon-marketplace-listing\
-             ?provider=amazonJapan&asin={}&item_title=&new=true",
+            "https://neokyo.com/en/amazon-marketplace-listing\
+            ?provider=amazonJapan&asin={}&item_title=&new=true",
             asin
         );
 
@@ -77,7 +77,7 @@ impl<'a> Base<'a> {
         asin: &'a str,
     ) -> Result<Option<Price>, Box<dyn Error>> {
         let search_url = format!(
-            "https://neokyo.com/amazon-marketplace-listing\
+            "https://neokyo.com/en/amazon-marketplace-listing\
              ?provider=amazonJapan\
              &asin={}&item_title=&used=true&as_new=true&very_good=true&good=true&acceptable=true",
             asin
@@ -96,7 +96,7 @@ impl BaseModule for AmazonCoJp {
     /// retrieve the lowest price for new and used condition
     fn get_lowest_prices(&self, item: &Item) -> Result<Prices, Box<dyn Error>> {
         let search_url = format!(
-            "https://neokyo.com/search-results?keyword={}&provider=amazonJapan&spid=",
+            "https://neokyo.com/en/search-results?keyword={}&provider=amazonJapan&spid=",
             item.jan
         );
 
@@ -112,7 +112,7 @@ impl BaseModule for AmazonCoJp {
         let doc = kuchiki::parse_html().one(res.text()?.as_str());
 
         if let Ok(css_match) =
-            doc.select_first("div.product-card a.nippon-cta.btn[href*='neokyo.com/product/']")
+            doc.select_first("div.product-card a.nippon-cta.btn[href*='neokyo.com/en/product/']")
         {
             if let Some(element) = css_match.as_node().as_element() {
                 if let Some(detail_link) = element.attributes.borrow().get("href") {

@@ -13,14 +13,17 @@ struct Info {}
 /// the private part of the InfoModule implementation
 impl Info {
     /// retrieve the title of the figure from the HTML document of the detail page
-    fn get_figure_title_from_doc(doc: &NodeRef) -> String {
-        doc.select_first("h1 > span[itemprop='name']")
-            .unwrap()
-            .attributes
-            .borrow()
-            .get("title")
-            .unwrap()
-            .to_string()
+    fn get_figure_title_from_doc(doc: &NodeRef) -> Result<String, String> {
+        if let Ok(first_element) = doc.select_first("h1 > span.h1-headline span[itemprop='name']") {
+            Ok(first_element
+                .attributes
+                .borrow()
+                .get("title")
+                .unwrap()
+                .to_string())
+        } else {
+            Err("couldn't find the title".to_string())
+        }
     }
 
     /// retrieve the scale of the figure from the HTML document of the detail page
@@ -119,7 +122,10 @@ impl InfoModule for MyFigureCollection {
             terms_jp.push(scale);
         }
 
-        item.description = Info::get_figure_title_from_doc(&doc);
+        if let Ok(description) = Info::get_figure_title_from_doc(&doc) {
+            item.description = description;
+        }
+
         item.image = format!(
             "https://static.myfigurecollection.net/pics/figure/large/{}.jpg",
             self.get_figure_id(item)?

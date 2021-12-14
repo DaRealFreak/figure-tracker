@@ -275,7 +275,13 @@ impl FigureTracker {
 }
 
 fn main() {
-    if let Ok(mut app) = FigureTracker::new() {
-        app.execute();
+    let app = FigureTracker::new();
+    match app {
+        Ok(mut app) => {
+            app.execute();
+        }
+        Err(err) => {
+            error!("couldn't execute the program successfully (err: {:?})", err);
+        }
     }
 }

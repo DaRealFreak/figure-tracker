@@ -1,8 +1,8 @@
-use std::str::FromStr;
-
+use clap::ArgEnum;
 use rusqlite::types::{FromSql, FromSqlError, FromSqlResult, ValueRef};
+use std::fmt::Formatter;
 
-#[derive(Clone, Copy, Debug)]
+#[derive(ArgEnum, Copy, Clone)]
 pub(crate) enum ConditionType {
     BelowPrice,
     BelowPriceTaxed,
@@ -34,10 +34,14 @@ impl ToString for ConditionType {
     }
 }
 
-impl std::str::FromStr for ConditionType {
-    type Err = InvalidConditionError;
+impl std::fmt::Debug for ConditionType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.to_string())
+    }
+}
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
+impl ConditionType {
+    fn get_from_str(s: &str) -> Result<Self, InvalidConditionError> {
         match s {
             "below_price" => Ok(ConditionType::BelowPrice),
             "below_price_taxed" => Ok(ConditionType::BelowPriceTaxed),
@@ -57,7 +61,7 @@ impl std::str::FromStr for ConditionType {
 /// to only allow specific item conditions
 impl FromSql for ConditionType {
     fn column_result(value: ValueRef<'_>) -> FromSqlResult<Self> {
-        match ConditionType::from_str(value.as_str()?) {
+        match ConditionType::get_from_str(value.as_str()?) {
             Ok(condition_type) => Ok(condition_type),
             Err(_) => Err(FromSqlError::InvalidType),
         }

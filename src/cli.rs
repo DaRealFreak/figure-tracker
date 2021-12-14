@@ -68,6 +68,7 @@ pub(crate) struct AddItem {
 #[derive(Parser, Debug)]
 pub(crate) struct AddNotification {
     #[clap(
+        arg_enum,
         short = 't',
         long = "type",
         required = true,
@@ -81,6 +82,7 @@ possible types are:
     )]
     pub(crate) condition_type: ConditionType,
     #[clap(
+        arg_enum,
         short = 'c',
         long = "condition",
         long_help = r"option to limit notifications for a specific item condition

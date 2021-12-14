@@ -1,6 +1,7 @@
 use core::fmt;
 use std::error::Error;
 
+use clap::ArgEnum;
 use rusqlite::types::{FromSql, FromSqlError, FromSqlResult, ToSqlOutput, ValueRef};
 use rusqlite::{params, ToSql};
 use std::fmt::Formatter;
@@ -19,7 +20,7 @@ pub(crate) struct Item {
 }
 
 /// Available item conditions to request for
-#[derive(Clone, Copy, Debug)]
+#[derive(ArgEnum, Clone, Copy, Debug)]
 pub(crate) enum ItemConditions {
     New,
     Used,

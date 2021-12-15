@@ -1,4 +1,5 @@
 use std::error::Error;
+use std::time::Duration;
 
 use reqwest::header::{HeaderMap, ACCEPT_LANGUAGE, USER_AGENT};
 use yaml_rust::Yaml;
@@ -78,5 +79,8 @@ pub fn get_client() -> Result<reqwest::blocking::Client, Box<dyn Error>> {
     builder = builder.default_headers(header_map);
 
     // return the built client
-    Ok(builder.gzip(true).build()?)
+    Ok(builder
+        .gzip(true)
+        .timeout(Duration::from_secs(30))
+        .build()?)
 }

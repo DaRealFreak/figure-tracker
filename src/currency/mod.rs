@@ -64,7 +64,7 @@ fn test_currency_conversion() {
                 converter.convert_price_to(150.0, SupportedCurrency::EUR, SupportedCurrency::USD)
             );
         }
-        Err(err) => panic!(err.to_string()),
+        Err(err) => panic!("{:?}", err.to_string()),
     }
 }
 

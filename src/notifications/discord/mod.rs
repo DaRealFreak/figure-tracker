@@ -107,6 +107,7 @@ impl Notification for Discord {
         let msg = format!(
             "met search notification on item:\n\
              **{}**\n\
+             **{}**\n\
              \n\
              price: **{:.2} {}**\n\
              price with taxes: **{:.2} {}**\n\
@@ -121,6 +122,7 @@ impl Notification for Discord {
              \n\
              link: {}",
             item.description,
+            item.jan,
             price.converted_price,
             price.converted_currency,
             price.get_converted_taxed(),

@@ -13,7 +13,7 @@ features = ["bundled", "chrono"]
 [dependencies.clap]
 git = "https://github.com/clap-rs/clap"
 version = "3.0.0-beta.1"
-features = ["yaml","derive"]
+features = ["yaml", "derive"]
 
 [dependencies.reqwest]
 version = "0.10.3"
@@ -31,11 +31,9 @@ features = ["serialize"]
 version = "0.2.11"
 features = ["i128"]
 
-[dependencies.telegram-bot]
-git = 'https://github.com/telegram-rs/telegram-bot'
-
 [dependencies]
 log = "0.4.8"
+clap_generate = "3.0.0-rc.4"
 env_logger = "0.7.1"
 chrono = "0.4.10"
 yaml-rust = "0.4.3"
@@ -49,3 +47,4 @@ kuchiki = "0.8.0"
 tokio = "0.2.13"
 serenity = "0.8.0"
 tempfile = "3.1.0"
+frankenstein = "0.9.0"

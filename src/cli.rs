@@ -12,7 +12,7 @@ pub(crate) struct FigureTrackerOptions {
     #[clap(short = 'c', long = "config", default_value = "tracker.yaml")]
     pub(crate) config: String,
     /// A level of verbosity, and can be used multiple times
-    #[clap(short = 'v', long = "verbose", parse(from_occurrences))]
+    #[clap(short = 'v', long = "verbose", parse(from_occurrences), global = true)]
     pub(crate) verbose: i32,
     #[clap(subcommand)]
     pub(crate) subcmd: SubCommand,
@@ -74,11 +74,12 @@ pub(crate) struct AddNotification {
         required = true,
         long_help = r"condition type when to notify you about a newly detected price
 possible types are:
- - below_price - notifies you when the converted price is below <value>
- - below_price_taxed - notification when the converted price including the taxes is below <value>
- - below_price_full - notification when the converted price including taxes and shipping is below <value>
- - lowest_price - notification when the price is <value> below it's lowest point since tracking the prices
- - price_drop - notification is a price is <value> percent lower than the previously detected price"
+ - below-price - notifies you when the converted price is below <value>
+ - below-price-taxed - notification when the converted price including the taxes is below <value>
+ - below-price-full - notification when the converted price including taxes and shipping is below <value>
+ - lowest-price - notification when the price is <value> below it's lowest point since tracking the prices
+ - price-drop - notification is a price is <value> percent lower than the previously detected price
+"
     )]
     pub(crate) condition_type: ConditionType,
     #[clap(
@@ -88,11 +89,13 @@ possible types are:
         long_help = r"option to limit notifications for a specific item condition
 possible conditions are:
  - new - figure is still unopened in the box
- - used - figure is used and box got opened already"
+ - used - figure is used and box got opened already
+ - all - either new or used condition
+"
     )]
     pub(crate) condition: Option<ItemConditions>,
     /// value of the notification condition
-    #[clap(short = 'v', long = "value", required = true)]
+    #[clap(short = 'V', long = "value", required = true)]
     pub(crate) value: f64,
     /// JAN/EAN numbers of the items to add the notification condition for
     #[clap(required = true, min_values = 1)]
